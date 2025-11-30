@@ -9,9 +9,6 @@ function createDatabaseManager(){
     if(dbType ==='mongodb'){
         const MongoDBManger = require ('./mongodb/index');
         return new MongoDBManger();
-    } else if(dbType ==='postgresql'){
-        const PostgreSQLManager = require ('./postgresql/index');
-        return new PostgreSQLManager();
     }else{
         throw new Error('Unsupported database type');
     }
