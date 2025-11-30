@@ -1,0 +1,154 @@
+
+const DatabaseManager = require('../index')
+const mongoose = require('mongoose')
+
+class MongoDBManger extends DatabaseManager{
+    constructor(){
+        super();
+        this.User = null;
+        this.Playlist = null;
+        this.isConnected = false;
+    }
+    async connect() {
+        try {
+            if (!this.isConnected) {
+                await mongoose.connect(process.env.DB_CONNECT, { 
+                    useNewUrlParser: true,
+                    useUnifiedTopology: true 
+                });
+                this.User = require('../../models/user-model');
+                this.Playlist = require('../../models/playlist-model');
+                
+                this.isConnected = true;
+                console.log('MongoDB connected successfully');
+            }
+            return this.isConnected;
+        } catch (error) {
+            console.error('MongoDB connection error:', error.message);
+            throw error;
+        }
+    }
+    async disconnect(){
+        try{
+            await mongoose.disconnect();
+            this.isConnected = false;
+            console.log('MongoDB disconnected.')
+        } catch (error){
+            console.error('MongoDB disconnection error: ', error.message);
+            throw error; 
+        }
+    }
+
+    //User methods
+    async createUser(userData){
+        try {
+            const newUser = new this.User(userData);  
+            const savedUser = await newUser.save();
+            return savedUser;
+        } catch (error) {
+            console.error('Error creating user:', error);
+            throw error;
+        }
+    }
+    async findUserById(userId) {
+        try {
+            const user = await this.User.findOne({ _id: userId });
+            return user;
+        } catch (error) {
+            console.error('Error finding user by ID:', error);
+            throw error;
+        }
+    }
+    async findUserByEmail(email) {
+        try {
+            const user = await this.User.findOne({ email: email });
+            return user;
+        } catch (error) {
+            console.error('Error finding user by email:', error);
+            throw error;
+        }
+    }
+    //Playlist methods
+    async createPlaylist(playlistData){
+        try{
+            const newPlaylist = new this.Playlist(playlistData);
+            const savedPlaylist = await newPlaylist.save();
+            return savedPlaylist;
+        }catch(error){
+            console.error('Error creating playlist: ', error);
+            throw error; 
+        }
+    }
+    async findPlaylistById(playlistId){
+        try{
+            const playlist = await this.Playlist.findById({ _id: playlistId});
+            return playlist;
+        } catch (error){
+            console.error('Error finding playlist by ID: ', error);
+            throw error;
+        }
+    }
+    async findPlaylistsByOwnerEmail(ownerEmail){
+        try{
+            const playlists = await this.Playlist.find({ownerEmail: ownerEmail});
+            return playlists;
+        } catch (error){
+            console.error('Error finding playlists by owner: ', error);
+            throw error; 
+        }
+    }
+    async updatePlaylist(playlistId, playlistData){
+        try{
+            const playlist = await this.Playlist.findOne({ _id: playlistId});
+            if(!playlist){
+                throw new Error('Playlist not found');
+            }
+            playlist.name = playlistData.name;
+            playlist.songs = playlistData.songs;
+
+            const savedPlaylist = await playlist.save();
+            return savedPlaylist;
+        }catch (error) {
+            console.error('Error updating playlist:', error);
+            throw error;
+        }
+    }
+    async deletePlaylist(playlistId) {
+        try {
+            const deletedPlaylist = await this.Playlist.findOneAndDelete({ _id: playlistId });
+            return deletedPlaylist;
+        } catch (error) {
+            console.error('Error deleting playlist:', error);
+            throw error;
+        }
+    }
+    async getAllPlaylists() {
+        try {
+            const playlists = await this.Playlist.find({});
+            return playlists;
+        } catch (error) {
+            console.error('Error getting all playlists:', error);
+            throw error;
+        }
+    }
+    async clearAllUsers() {
+        try {
+            await this.User.deleteMany({});
+            console.log('All users cleared from MongoDB');
+        } catch (error) {
+            console.error('Error clearing users:', error);
+            throw error;
+        }
+    }
+
+    async clearAllPlaylists() {
+        try {
+            await this.Playlist.deleteMany({});
+            console.log('All playlists cleared from MongoDB');
+        } catch (error) {
+            console.error('Error clearing playlists:', error);
+            throw error;
+        }
+    }
+}
+module.exports = MongoDBManger;
