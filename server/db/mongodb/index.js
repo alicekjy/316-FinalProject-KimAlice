@@ -152,7 +152,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-    
+
     async deletePlaylist(playlistId) {
         try {
             const deletedPlaylist = await this.Playlist.findOneAndDelete({ _id: playlistId });
@@ -175,6 +175,72 @@ class MongoDBManger extends DatabaseManager{
         }
     }
 
+    async searchPlaylists(filters) {
+        try {
+            let query = {};
+            
+            // Build query based on filters
+            if (filters.playlistName) {
+                query.name = { $regex: filters.playlistName, $options: 'i' };
+            }
+            
+            if (filters.ownerUsername) {
+                //find users matching the username
+                const users = await this.User.find({
+                    username: { $regex: filters.ownerUsername, $options: 'i' }
+                });
+                const userIds = users.map(u => u._id);
+                query.owner = { $in: userIds };
+            }
+
+            let playlists = await this.Playlist.find(query)
+                .populate('songs')
+                .populate('owner', 'username email avatar');
+
+            // Filter by song - title, artist, year if provided
+            if (filters.songTitle || filters.songArtist || filters.songYear) {
+                playlists = playlists.filter(playlist => {
+                    return playlist.songs.some(song => {
+                        let match = true;
+                        if (filters.songTitle) {
+                            match = match && song.title.toLowerCase().includes(filters.songTitle.toLowerCase());
+                        }
+                        if (filters.songArtist) {
+                            match = match && song.artist.toLowerCase().includes(filters.songArtist.toLowerCase());
+                        }
+                        if (filters.songYear) {
+                            match = match && song.year === parseInt(filters.songYear);
+                        }
+                        return match;
+                    });
+                });
+            }
+
+            return playlists;
+        } catch (error) {
+            console.error('Error searching playlists:', error);
+            throw error;
+        }
+    }
+
+    async addListener(playlistId, userId){
+        try{
+            const playlist = await this.Playlist.findById(playlistId);
+            if(!playlist){
+                throw new Error('Playlist not found');
+            }
+
+            //add user to listeners if not already there
+            if(!playlist.listeners.includes(userId)){
+                playlist.listeners.push(userId);
+                await playlist.save();
+            }
+            return playlist;
+        } catch (error){
+            console.error('Error adding listener: ', error);
+            throw error; 
+        }
+    }
     //utility methods
     async clearAllUsers() {
         try {
