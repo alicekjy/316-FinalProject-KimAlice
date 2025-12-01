@@ -70,36 +70,6 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-    //Playlist methods
-    async createPlaylist(playlistData){
-        try{
-            const newPlaylist = new this.Playlist(playlistData);
-            const savedPlaylist = await newPlaylist.save();
-            return savedPlaylist;
-        }catch(error){
-            console.error('Error creating playlist: ', error);
-            throw error; 
-        }
-    }
-    async findPlaylistById(playlistId){
-        try{
-            const playlist = await this.Playlist.findById({ _id: playlistId});
-            return playlist;
-        } catch (error){
-            console.error('Error finding playlist by ID: ', error);
-            throw error;
-        }
-    }
-    async findPlaylistsByOwnerEmail(ownerEmail){
-        try{
-            const playlists = await this.Playlist.find({ownerEmail: ownerEmail});
-            return playlists;
-        } catch (error){
-            console.error('Error finding playlists by owner: ', error);
-            throw error; 
-        }
-    }
-
     async updateUser(userId, userData){
         try{
             const user = await this.User.findById(userId);
@@ -119,23 +89,70 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-    
-    async updatePlaylist(playlistId, playlistData){
+    //Playlist methods
+    async createPlaylist(playlistData){
         try{
-            const playlist = await this.Playlist.findOne({ _id: playlistId});
-            if(!playlist){
+            const newPlaylist = new this.Playlist(playlistData);
+            const savedPlaylist = await newPlaylist.save();
+            return savedPlaylist;
+        }catch(error){
+            console.error('Error creating playlist: ', error);
+            throw error; 
+        }
+    }
+    async findPlaylistById(playlistId){
+        try{
+            const playlist = await this.Playlist.findById({ _id: playlistId})
+            .populate('songs')
+            .populate('owner', 'username email avatar');
+            return playlist;
+        } catch (error){
+            console.error('Error finding playlist by ID: ', error);
+            throw error;
+        }
+    }
+
+    async findPlaylistsByOwner(ownerId) {
+        try {
+            const playlists = await this.Playlist.find({ owner: ownerId })
+                .populate('songs')
+                .sort({ updatedAt: -1 });
+            return playlists;
+        } catch (error) {
+            console.error('Error finding playlists by owner:', error);
+            throw error; 
+        }
+    }
+
+    async findPlaylistsByOwnerEmail(ownerEmail){
+        try{
+            const playlists = await this.Playlist.find({ownerEmail: ownerEmail})
+                .populate('songs')
+                .sort({updatedAt: -1});
+            return playlists;
+        } catch (error){
+            console.error('Error finding playlists by owner email: ', error);
+            throw error; 
+        }
+    }
+    async updatePlaylist(playlistId, playlistData) {
+        try {
+            const playlist = await this.Playlist.findById(playlistId);
+            if (!playlist) {
                 throw new Error('Playlist not found');
             }
-            playlist.name = playlistData.name;
-            playlist.songs = playlistData.songs;
+            
+            if (playlistData.name) playlist.name = playlistData.name;
+            if (playlistData.songs !== undefined) playlist.songs = playlistData.songs;
 
             const savedPlaylist = await playlist.save();
             return savedPlaylist;
-        }catch (error) {
+        } catch (error) {
             console.error('Error updating playlist:', error);
             throw error;
         }
     }
+    
     async deletePlaylist(playlistId) {
         try {
             const deletedPlaylist = await this.Playlist.findOneAndDelete({ _id: playlistId });
@@ -147,13 +164,18 @@ class MongoDBManger extends DatabaseManager{
     }
     async getAllPlaylists() {
         try {
-            const playlists = await this.Playlist.find({});
+            const playlists = await this.Playlist.find({})
+                .populate('songs')
+                .populate('owner', 'username email avatar')
+                .sort({updatedAt : -1});
             return playlists;
         } catch (error) {
             console.error('Error getting all playlists:', error);
             throw error;
         }
     }
+
+    //utility methods
     async clearAllUsers() {
         try {
             await this.User.deleteMany({});
