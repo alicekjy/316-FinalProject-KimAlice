@@ -106,8 +106,8 @@ registerUser = async (req, res) => {
     console.log("REGISTERING USER IN BACKEND");
     try {
         const { username, email, password, passwordVerify, avatar } = req.body;
-        console.log("create user: " + firstName + " " + lastName + " " + email + " " + password + " " + passwordVerify);
-        if (!firstName || !lastName || !email || !password || !passwordVerify) {
+        console.log("create user: " + username+ " " + email + " " + password + " " + passwordVerify);
+        if (!username || !email || !password || !passwordVerify) {
             return res
                 .status(400)
                 .json({ errorMessage: "Please enter all required fields." });
@@ -121,6 +121,7 @@ registerUser = async (req, res) => {
                 });
         }
         console.log("password long enough");
+
         if (password !== passwordVerify) {
             return res
                 .status(400)
@@ -129,6 +130,7 @@ registerUser = async (req, res) => {
                 })
         }
         console.log("password and password verify match");
+
         const existingUser = await dbManager.findUserByEmail(email);
         console.log("existingUser: " + existingUser);
         if (existingUser) {
@@ -143,15 +145,18 @@ registerUser = async (req, res) => {
         const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
         const passwordHash = await bcrypt.hash(password, salt);
+
         console.log("passwordHash: " + passwordHash);
         
         const db = req.app.locals.db;
         const savedUser = await db.createUser({
-            firstName,
-            lastName,
+            username,
             email,
-            passwordHash
+            passwordHash,
+            // provided avatar or empty sting
+            avatar: avatar || ''
         });
+        
         console.log("new user saved: " + savedUser._id);
 
         // LOGIN THE USER
