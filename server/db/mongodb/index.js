@@ -241,6 +241,157 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
+    //Song methods
+    /**
+     * create Song, find Song by Id, find Song by Details
+     * find Songs by Added By, get All Songs
+     * search Songs, update Song, delete Song, increment Song Listens
+     * update Song Playlist Count
+     */
+    async createSong(songData){
+        try{
+            const newSong = new this.Song(songData);
+            const savedSong = await newSong.save();
+            return savedSong; 
+        }catch (error){
+            console.error('Error creating song: ', error);
+            throw error;
+        }
+    }
+
+    async findSongById(songId){
+        try{
+            const song = await this.Song.findById(songId)
+                .populate('addedBy', 'username email');
+            return song;
+        }catch(error){
+            console.error('Error finding song by ID: ', error);
+            throw error;
+        }
+    }
+
+    async findSongByDetails(title, artist, year){
+        try{
+            const song = await this.Song.findOne({
+                title: title,
+                artist: artist,
+                year: year
+            });
+            return song;
+        }catch (error){
+            console.error('Error finding song by details: ', error);
+            throw error;
+        }
+    }
+
+    async findSongsByAddedBy(userId){
+        try{
+            const songs = await this.Song.find({ addedBy: userId})
+                .sort({createdAt: -1});
+            return songs;
+        }catch(error){
+            console.error('Error finding songs by user: ', error);
+            throw error;
+        }
+    }
+
+    async getAllSongs(){
+        try{
+            const songs = await this.Song.find({})
+                .populate('addedBy', 'username email')
+                .sort({createdAt: -1});
+            return songs;
+        }catch (error){
+            console.error('Error getting all songs: ', error);
+            throw error;
+        }
+    }
+
+    async searchSongs(filters) {
+        try {
+            let query = {};
+            
+            if (filters.title) {
+                query.title = { $regex: filters.title, $options: 'i' };
+            }
+            if (filters.artist) {
+                query.artist = { $regex: filters.artist, $options: 'i' };
+            }
+            if (filters.year) {
+                query.year = parseInt(filters.year);
+            }
+
+            const songs = await this.Song.find(query)
+                .populate('addedBy', 'username email');
+            return songs;
+        } catch (error) {
+            console.error('Error searching songs:', error);
+            throw error;
+        }
+    }
+    async updateSong(songId, songData){
+        try{
+            const song = await this.Song.findById(songId);
+            if(!song){
+                throw new Error('Song not found');
+            }
+            if(songData.title) song.title = songData.title;
+            if(songData.artist) song.artist = songData.artist;
+            if(songData.year) song.year = songData.year;
+            if(songData.youtubeId) song.youtubeId = songData.youtubeId;
+
+            const savedSong = await song.save();
+            return savedSong;
+        }catch (error){
+            console.error('Error updating song: ', error);
+            throw error;
+        }
+    }
+    async deleteSong (songId){
+        try{
+            await this.Playlist.updateMany(
+                {songs: songId},
+                {$pull: {songs: songId}}
+            );
+            const deletedSong = await this.Song.findByIdAndDelete(songId);
+            return deletedSong;
+        }catch(error){
+            console.error('Error deleting song: ', error);
+            throw error; 
+        }
+    }
+
+    async incrementSongListens(songId){
+        try{
+            const song = await this.Song.findByIdAndUpdate(
+                songId,
+                {$inc: {numListens: 1}},
+                {new: true}
+            );
+            return song;
+        }catch (error){
+            console.error('Error incrementing song listens: ', error);
+            throw error;
+        }
+    }
+
+    async updateSongPlaylistCount (songId){
+        try{
+            //count how many playlists contain this song
+            const count = await this.Playlist.countDocuments({songs: songId});
+
+            const song = await this.Song.findByIdAndUpdate(
+                songId,
+                {numPlaylists: count},
+                {new: true}
+            );
+            return song;
+        }catch (error){
+            console.error('Error updating song playlist count: ', error);
+            throw error; 
+        }
+    }
+
     //utility methods
     async clearAllUsers() {
         try {
@@ -259,6 +410,16 @@ class MongoDBManger extends DatabaseManager{
         } catch (error) {
             console.error('Error clearing playlists:', error);
             throw error;
+        }
+    }
+
+    async clearAllSongs(){
+        try{
+            await this.Song.deleteMany({});
+            console.log('All songs cleared from MongoDB');
+        }catch (error){
+            console.error('Error clearing songs: ', error);
+            throw error; 
         }
     }
 }
