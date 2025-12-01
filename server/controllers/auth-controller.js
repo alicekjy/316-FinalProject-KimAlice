@@ -16,12 +16,19 @@ getLoggedIn = async (req, res) => {
         const loggedInUser = await db.findUserById(userId);
         console.log("loggedInUser: " + loggedInUser);
 
+        if(!loggedInUser){
+            return res.status(200).json({
+                loggedIn: false,
+                user:null
+            })
+        }
+
         return res.status(200).json({
             loggedIn: true,
             user: {
-                firstName: loggedInUser.firstName,
-                lastName: loggedInUser.lastName,
-                email: loggedInUser.email
+                username: loggedInUser.username,
+                email: loggedInUser.email,
+                avatar: loggedInUser.avatar
             }
         })
     } catch (err) {
@@ -98,7 +105,7 @@ logoutUser = async (req, res) => {
 registerUser = async (req, res) => {
     console.log("REGISTERING USER IN BACKEND");
     try {
-        const { firstName, lastName, email, password, passwordVerify } = req.body;
+        const { username, email, password, passwordVerify, avatar } = req.body;
         console.log("create user: " + firstName + " " + lastName + " " + email + " " + password + " " + passwordVerify);
         if (!firstName || !lastName || !email || !password || !passwordVerify) {
             return res
@@ -158,9 +165,9 @@ registerUser = async (req, res) => {
         }).status(200).json({
             success: true,
             user: {
-                firstName: savedUser.firstName,
-                lastName: savedUser.lastName,  
-                email: savedUser.email              
+                username: existingUser.username, 
+                email: existingUser.email,
+                avatar: existingUser.avatar              
             }
         })
 
