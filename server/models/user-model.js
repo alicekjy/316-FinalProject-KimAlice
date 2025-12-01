@@ -4,11 +4,15 @@ const ObjectId = Schema.Types.ObjectId
 
 const UserSchema = new Schema(
     {
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
-        email: { type: String, required: true },
-        passwordHash: { type: String, required: true },
-        playlists: [{type: ObjectId, ref: 'Playlist'}]
+        // firstName: { type: String, required: true },
+        // lastName: { type: String, required: true },
+        // email: { type: String, required: true },
+        // passwordHash: { type: String, required: true },
+        // playlists: [{type: ObjectId, ref: 'Playlist'}]
+        email: String,
+        username: String,
+        passwordHash: String,
+        avatar: String
     },
     { timestamps: true }
 )
