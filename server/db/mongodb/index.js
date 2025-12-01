@@ -2,7 +2,7 @@
 const DatabaseManager = require('../index')
 const mongoose = require('mongoose')
 //add song
-class MongoDBManger extends DatabaseManager{
+class MongoDBManager extends DatabaseManager{
     constructor(){
         super();
         this.User = null;
@@ -42,6 +42,7 @@ class MongoDBManger extends DatabaseManager{
     }
 
     //User methods
+    //2.1 create account
     async createUser(userData){
         try {
             const newUser = new this.User(userData);  
@@ -52,6 +53,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //2.2 login, 2.4 check logged in
     async findUserById(userId) {
         try {
             const user = await this.User.findOne({ _id: userId });
@@ -61,6 +63,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //2.2 login
     async findUserByEmail(email) {
         try {
             const user = await this.User.findOne({ email: email });
@@ -70,6 +73,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //2.3 edit account
     async updateUser(userId, userData){
         try{
             const user = await this.User.findById(userId);
@@ -90,6 +94,7 @@ class MongoDBManger extends DatabaseManager{
         }
     }
     //Playlist methods
+    //2.7 create playlist
     async createPlaylist(playlistData){
         try{
             const newPlaylist = new this.Playlist(playlistData);
@@ -100,6 +105,7 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
+    //2.8 edit, 2.10 delete, 2.11 play
     async findPlaylistById(playlistId){
         try{
             const playlist = await this.Playlist.findById({ _id: playlistId})
@@ -111,7 +117,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //show my playlists
     async findPlaylistsByOwner(ownerId) {
         try {
             const playlists = await this.Playlist.find({ owner: ownerId })
@@ -123,7 +129,7 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
-
+    //same but search by email, backward compatibility
     async findPlaylistsByOwnerEmail(ownerEmail){
         try{
             const playlists = await this.Playlist.find({ownerEmail: ownerEmail})
@@ -135,6 +141,7 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
+    //2.8 edit playlist
     async updatePlaylist(playlistId, playlistData) {
         try {
             const playlist = await this.Playlist.findById(playlistId);
@@ -152,7 +159,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.10 delete playlist
     async deletePlaylist(playlistId) {
         try {
             const deletedPlaylist = await this.Playlist.findOneAndDelete({ _id: playlistId });
@@ -162,6 +169,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //guest mode 2.5 guest browsing
     async getAllPlaylists() {
         try {
             const playlists = await this.Playlist.find({})
@@ -174,7 +182,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.12 find playlist
     async searchPlaylists(filters) {
         try {
             let query = {};
@@ -222,7 +230,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.11 play playlist
     async addListener(playlistId, userId){
         try{
             const playlist = await this.Playlist.findById(playlistId);
@@ -248,6 +256,7 @@ class MongoDBManger extends DatabaseManager{
      * search Songs, update Song, delete Song, increment Song Listens
      * update Song Playlist Count
      */
+    //2.16 add song to catalog
     async createSong(songData){
         try{
             const newSong = new this.Song(songData);
@@ -258,7 +267,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //display song details
     async findSongById(songId){
         try{
             const song = await this.Song.findById(songId)
@@ -269,7 +278,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.16 prevent duplicates, check if song exists
     async findSongByDetails(title, artist, year){
         try{
             const song = await this.Song.findOne({
@@ -283,7 +292,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //show my songs, get songs user added 
     async findSongsByAddedBy(userId){
         try{
             const songs = await this.Song.find({ addedBy: userId})
@@ -294,7 +303,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.15 browse catalog, guest/logged-in browse all 
     async getAllSongs(){
         try{
             const songs = await this.Song.find({})
@@ -306,7 +315,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //2.15 Find specific songs - search by title/artist/year
     async searchSongs(filters) {
         try {
             let query = {};
@@ -329,6 +338,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //2.17 edit song
     async updateSong(songId, songData){
         try{
             const song = await this.Song.findById(songId);
@@ -347,6 +357,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
+    //2.18 remove song
     async deleteSong (songId){
         try{
             await this.Playlist.updateMany(
@@ -360,7 +371,7 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
-
+    //2.11 play playlist - track play count
     async incrementSongListens(songId){
         try{
             const song = await this.Song.findByIdAndUpdate(
@@ -374,7 +385,7 @@ class MongoDBManger extends DatabaseManager{
             throw error;
         }
     }
-
+    //after adding/removing from playlists
     async updateSongPlaylistCount (songId){
         try{
             //count how many playlists contain this song
@@ -423,4 +434,4 @@ class MongoDBManger extends DatabaseManager{
         }
     }
 }
-module.exports = MongoDBManger;
+module.exports = MongoDBManager;
