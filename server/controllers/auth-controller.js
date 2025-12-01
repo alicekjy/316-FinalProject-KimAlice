@@ -156,7 +156,7 @@ registerUser = async (req, res) => {
             // provided avatar or empty sting
             avatar: avatar || ''
         });
-        
+
         console.log("new user saved: " + savedUser._id);
 
         // LOGIN THE USER
@@ -170,9 +170,9 @@ registerUser = async (req, res) => {
         }).status(200).json({
             success: true,
             user: {
-                username: existingUser.username, 
-                email: existingUser.email,
-                avatar: existingUser.avatar              
+                username: username, 
+                email: email,
+                avatar: avatar              
             }
         })
 
