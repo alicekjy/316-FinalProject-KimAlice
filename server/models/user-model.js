@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-const ObjectId = Schema.Types.ObjectId
 
 const UserSchema = new Schema(
     {
@@ -9,12 +8,11 @@ const UserSchema = new Schema(
         // email: { type: String, required: true },
         // passwordHash: { type: String, required: true },
         // playlists: [{type: ObjectId, ref: 'Playlist'}]
-        email: String,
-        username: String,
-        passwordHash: String,
-        avatar: String
+        email: {type: String, required: true, unique: true, trim: true, lowercase: true},
+        username: {type: String, required: true, trim: true},
+        passwordHash: {type: String, reqiored: true},
+        avatar: {type: String, required: true, default: ''}
     },
     { timestamps: true }
 )
-
 module.exports = mongoose.model('User', UserSchema)
