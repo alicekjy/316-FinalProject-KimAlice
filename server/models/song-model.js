@@ -12,7 +12,7 @@ const SongSchema = new Schema (
     {
         title : {type: String,required: true, trim: true},
         artist: {type: String,required: true, trim: true},
-        year: {type: String, required: true, trim: true},
+        year: {type: Number, required: true, min: 1000, max: 9999},
         youtubeId: {type: String, required: true, trim: true},
         addedBy: {type: Schema.Types.ObjectId, ref: 'User', required: true},
         numListens: {type: Number, default: 0, min: 0},
