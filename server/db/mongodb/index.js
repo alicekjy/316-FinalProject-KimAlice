@@ -1,12 +1,13 @@
 
 const DatabaseManager = require('../index')
 const mongoose = require('mongoose')
-
+//add song
 class MongoDBManger extends DatabaseManager{
     constructor(){
         super();
         this.User = null;
         this.Playlist = null;
+        this.Song = null; 
         this.isConnected = false;
     }
     async connect() {
@@ -18,6 +19,7 @@ class MongoDBManger extends DatabaseManager{
                 });
                 this.User = require('../../models/user-model');
                 this.Playlist = require('../../models/playlist-model');
+                this.Song = require('../../models/song-model');
                 
                 this.isConnected = true;
                 console.log('MongoDB connected successfully');
@@ -97,6 +99,27 @@ class MongoDBManger extends DatabaseManager{
             throw error; 
         }
     }
+
+    async updateUser(userId, userData){
+        try{
+            const user = await this.User.findById(userId);
+            if(!user){
+                throw new Error('User not found');
+            }
+            //Update fields
+            if(userData.username) user.username = userData.username;
+            if(userData.passwordHash) user.passwordHash = userData.passwordHash;
+            if(userData.avatar) user.avatar = userData.avatar;
+            //email cannot be changed per spec
+
+            const savedUser = await user.save();
+            return savedUser;
+        }catch(error){
+            console.error('Error updating user: ', error);
+            throw error;
+        }
+    }
+    
     async updatePlaylist(playlistId, playlistData){
         try{
             const playlist = await this.Playlist.findOne({ _id: playlistId});
