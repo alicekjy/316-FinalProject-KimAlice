@@ -203,3 +203,33 @@ deleteSong = async (req, res) =>{
         });
     }
 }
+//helper function to sort songs
+function sortSongs(songs, sortBy, sortOrder = 'desc'){
+    const order = sortOrder === 'asc' ? 1 : -1;
+
+    return songs.sort((a,b)=> {
+        let comparison = 0;
+
+        switch(sortBy){
+            case 'listens':
+                comparison = a.numListens - b.numListens;
+                break;
+            case 'playlists':
+                comparison = a.numPlaylists - b.numPlaylists;
+                break;
+            case 'title':
+                comparison = a.title.localeCompare(b.title);
+                break;
+            case 'artist':
+                comparison = a.artist.localeCompare(b.aritst);
+                break;
+            case 'year':
+                comparison = a.year - b.year;
+                break;
+            default:
+                return 0;
+
+        }
+        return comparison * order;
+    });
+}
