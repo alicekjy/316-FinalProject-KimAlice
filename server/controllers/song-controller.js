@@ -94,3 +94,31 @@ getSongById = async(req, res) =>{
         });
     }
 }
+
+//Search songs - 2.15 - sorting added
+searchSongs = async (req, res) => {
+    try{
+        const db = req.app.locals.db;
+        const {title, artist, year, sortBy, sortOrder} = req.query;
+
+        let filters = {};
+        if(title) filters.title = title;
+        if(artist) filters.artist = artist;
+        if(year) filters.year = year;
+
+        let songs = await db.searchSongs(filters);
+
+        if(sortBy){
+            songs = sortSongs(songs, sortBy, sortOrder);
+        }
+        return res.status(200).json({
+            success: true,
+            songs: songs
+        });
+    }catch(error){
+        console.error('Error searching songs: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error searching songs'
+        });
+    }
+}
