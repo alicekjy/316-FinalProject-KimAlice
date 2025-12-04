@@ -233,3 +233,11 @@ function sortSongs(songs, sortBy, sortOrder = 'desc'){
         return comparison * order;
     });
 }
+module.exports = {
+    createSong,
+    getSongs,
+    getSongById,
+    searchSongs,
+    updateSong,
+    deleteSong
+}
