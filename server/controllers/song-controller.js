@@ -136,9 +136,9 @@ updateSong = async(req, res) =>{
         const song = await db.findSongsById(req.params.id);
 
         if(!song){
-            return res.status(404).json{
+            return res.status(404).json({
                 errorMessage: 'Song not found'
-            };
+            });
         }
         //check if user owns this song -only owner can edit
         if(song.addedBy._id.toString()!== userId.toString()){
