@@ -167,3 +167,39 @@ updateSong = async(req, res) =>{
     }
 }
 
+//remove song from catalog - 2.18
+deleteSong = async (req, res) =>{
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
+            });
+        }
+        const db = req.app.locals.db;
+        const song = await db.findSongById(req.params.id);
+
+        if(!song){
+            return res.status(404).json({
+                errorMessage: 'Song not found'
+            });
+        }
+        //check if user owns this song - owner can delete
+        if(song.addedBy._id.toString() !== userId.toString()){
+            return res.status(403).json({
+                errorMessage: 'You can only remove songs you added'
+            });
+        }
+        //Delete the song - aremoves it from all playlists
+        await db.deleteSong(req.params.id);
+        return res.status(200).json({
+            success: true,
+            message: 'Song removed from catalog and all playlists'
+        });
+    }catch(error){
+        console.error('Error deleting song: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error removing song'
+        });
+    }
+}
