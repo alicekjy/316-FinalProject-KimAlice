@@ -122,3 +122,48 @@ searchSongs = async (req, res) => {
         });
     }
 }
+
+//Edit song - 2.17
+updateSong = async(req, res) =>{
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
+            });
+        }
+        const db = req.app.locals.db;
+        const song = await db.findSongsById(req.params.id);
+
+        if(!song){
+            return res.status(404).json{
+                errorMessage: 'Song not found'
+            };
+        }
+        //check if user owns this song -only owner can edit
+        if(song.addedBy._id.toString()!== userId.toString()){
+            return res.status(403).json({
+                errorMessage: 'You can only edit songs you added'
+            });
+        }
+        const {title, artist, year, youtubeId} = req.body;
+        //validate
+        if(!title || !artist || !year || !youtubeId){
+            return res.status(400).json({
+                errorMessage: 'All fields are required'
+            });
+        }
+        const updatedSong = await db.updateSong(req.params.id,{
+            title, artist, year: parseInt(year), youtubeId
+        });
+        return res.status(200).json({
+            success: true, song: updatedSong
+        });
+    } catch (error){
+        console.error('Error updating song: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error updating song'
+        });
+    }
+}
+
