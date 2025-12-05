@@ -1,11 +1,8 @@
-const dbManager = require('../db/loader')
 const auth = require('../auth')
 /*
-    This is our back-end API. It provides all the data services
-    our database needs. Note that this file contains the controller
-    functions for each endpoint.
-    
-    @author McKilla Gorilla
+    Playlist controller for playlister
+    Handles: CreatePlaylist, Edit Playlist, Copy Playlist, Delete Playlist
+    Play Playlist, Find Playlist (search), sort playlist, add song to playlist
 */
 createPlaylist = async (req, res) => {
     if(auth.verifyUser(req) === null){
