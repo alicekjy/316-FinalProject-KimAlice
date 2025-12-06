@@ -73,7 +73,33 @@ function AuthContextProvider(props){
         }
     }
 
-   
+    auth.registerUser = async function (username, email, password, passwordVerify, avatar){
+        try{
+            const response = await authRequestSender.registerUser(username, email, password, passwordVerify, avatar);
+            if(response.status === 200 || response.status === 201){
+                authReducer({
+                    type: AuthActionType.REGISTER_USER,
+                    payload: {
+                        user: null,
+                        loggedIn: false,
+                        errorMessage: null
+                    }
+                })
+                history.push("/login")
+            }
+        }catch(error){
+            const errorMessage = error?.response?.data?.errorMessage || "Registration failed.";
+            authReducer({
+                type: AuthActionType.REGISTER_USER,
+                payload: {
+                    user: auth.user,
+                    loggedIn: false, 
+                    errorMessage: errorMessage
+                }
+            })
+        }
+    }
+    
 }
 export default AuthContext;
 export {AuthContextProvider};
