@@ -99,7 +99,58 @@ function AuthContextProvider(props){
             })
         }
     }
-    
+    auth.loginUser = async function (email, password){
+        try{
+            const response = await authRequestSender.loginUser(email, password);
+            if(response.status === 200){
+                authReducer({
+                    type: AuthActionType.LOGIN_USER,
+                    payload: {
+                        user: response.data.user,
+                        loggedIn: true,
+                        errorMessage : null
+                    }
+                })
+                history.push("/");
+            }
+        }catch(error){
+            const errorMessage = error?.response?.data?.errorMessage || 'Login failed';
+            authReducer({
+                type: AuthActionType.LOGIN_USER,
+                payload: {
+                    user: auth.user,
+                    loggedIn: false,
+                    errorMessage: errorMessage
+                }
+            })
+        }
+    }
+    auth.logoutUser = async function (){
+        try{
+            const response = await authRequestSender.logoutUser();
+            if(response.status === 200){
+                authReducer({
+                    type: AuthActionType.LOGOUT_USER,
+                    payload: null
+                })
+                history.push("/");
+            }
+        }catch (error){
+            console.error('Failed to logout', error);
+        }
+    }
+    auth.getUserInitials = function(){
+        let initials = "";
+        if(auth.user && auth.user.username){
+            initials = auth.user.username.substring(0,2).toUpperCase();
+        }
+        return initials;
+    }
+    return (
+        <AuthContext.Provider value = {{auth}}>
+            {props.children}
+        </AuthContext.Provider>
+    );
 }
 export default AuthContext;
 export {AuthContextProvider};
