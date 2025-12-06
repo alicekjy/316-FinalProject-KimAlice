@@ -56,6 +56,23 @@ function AuthContextProvider(props){
                 return auth; 
         }
     }
+    auth.getLoggedIn = async function () {
+        try{
+            const response = await authRequestSender.getLoggedIn();
+            if(response.status === 200){
+                authReducer({
+                    type: AuthActionType.GET_LOGGED_IN,
+                    payload: {
+                        loggedIn : response.data.loggedIn,
+                        user: response.data.user
+                    }
+                });
+            }
+        }catch (error){
+            console.error('Failed to verify login status: ', error);
+        }
+    }
+
    
 }
 export default AuthContext;
