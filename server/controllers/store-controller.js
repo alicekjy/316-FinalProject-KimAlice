@@ -162,48 +162,125 @@ copyPlaylist = async(req, res) => {
         });
     }
 }
-
+//delete playlist - 2.10
 deletePlaylist = async (req, res) => {
-    if(auth.verifyUser(req) === null){
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        })
-    }
-    console.log("delete Playlist with id: " + JSON.stringify(req.params.id));
-    
-    try {
-        const playlist = await dbManager.findPlaylistById(req.params.id);
-        console.log("playlist found: " + JSON.stringify(playlist));
-        
-        if (!playlist) {
-            return res.status(404).json({
-                errorMessage: 'Playlist not found!',
-            })
-        }
-
-        // DOES THIS LIST BELONG TO THIS USER?
-        const user = await dbManager.findUserByEmail(playlist.ownerEmail);
-        console.log("user._id: " + user._id);
-        console.log("req.userId: " + req.userId);
-        
-        if (user._id == req.userId) {
-            console.log("correct user!");
-            await dbManager.deletePlaylist(req.params.id);
-            return res.status(200).json({});
-        }
-        else {
-            console.log("incorrect user!");
-            return res.status(400).json({ 
-                errorMessage: "authentication error" 
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
             });
         }
-    } catch (err) {
-        console.log(err);
-        return res.status(400).json({ 
-            errorMessage: "Error deleting playlist" 
+        const db = req.app.locals.db;
+        const playlist = await db.findPlaylistById(req.params.id);
+
+        if(!playlist){
+            return res.status(404).json({
+                errorMessage: 'Playlist not found'
+            });
+        }
+        //check ownership
+        if(playlist.owner._id.toString() !== userId.toString()){
+            return res.status(403).json({
+                errorMessage: 'You can only delete your own playlist'
+            });
+        }
+
+        //store song Ids before deletion
+        const songIds = playlist.songs.map(s => s._id);
+        //delete playlist
+        await db.deletePlaylist(req.params.id);
+        //update playlist counts for affected songs
+        for (let songId of songIds){
+            await db.updateSongPlaylistCount(songId);
+        }
+        return res.status(200).json({
+            success: true, 
+            message: 'Playlist deleted successfully'
+        });
+    }catch(error){
+        console.error('Error deleting playlist:', error);
+        return res.status(500).json({
+            errorMessage: 'Error deleting playlist'
         });
     }
 }
+//play playlist - 2.11
+playPlaylist = async(req,res) =>{
+    try{
+        const userId = auth.verifyUser(req);
+        const db = req.app.locals.db;
+        const playlist = await db.findPlaylistById(req.params.id);
+
+        if(!playlist){
+            return res.status(404).json({
+                errorMessage: 'Playlist not found'
+            });
+        }
+
+        //add listener if logged in
+        if (userId){
+            await db.addListener(req.params.id, userId);
+        }
+        //increment listen count for each song
+        for(let song of playlist.songs){
+            await db.incrementSongListens(songs._id);
+        }
+        return res.status(200).json({
+            success:true,
+            playlist: playlist
+        });
+    }catch(error){
+        console.error('Error playing playlist: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error playling playlist'
+        });
+    }
+}
+// find playlists with sorting 2.12 & 2.13
+getPlaylists = async (req,res) =>{
+    try{
+        const userId = auth.verifyUser(req);
+        const db = req.app.locals.db;
+        const{
+            playlistName, ownerUsername, songTitle, songArtist, songYear,
+            sortBy, sortOrder
+        } = req.query ;
+        let playlists;
+        //if no filters, show owned playlists for logged-in users
+        if(!playlistName && !ownerUsername && !songTitle && !songArtist && !songYear){
+            if(userId){
+                playlists = await db.findPlaylistsByOwner(userId);
+            }else{
+                playlists = await db.getAllPlaylists();
+            }
+        }else{
+            //search with filters
+            const filters = {};
+            if(playlistName) filters.playlistName = playlistName;
+            if(ownerUsername) filters.ownerUsername = ownerUsername;
+            if(songTitle) filters.songTitle = songTitle;
+            if(songArtist) filters.songArtist = songArtist;
+            if(songYear) filters.songYear = songYear;
+
+            playlists = await db.searchPlaylists(filters);
+        }
+
+        //sort if requested
+        if(sortBy){
+            playlists = sortPlaylists(playlists, sortBy, sortOrder);
+        }
+        return res.status(200).json({
+            success: true, playlists: playlists
+        });
+    }catch(error){
+        console.error('Error getting playlists: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error retrieving playlists'
+        })
+    }
+}
+
 getPlaylistById = async (req, res) => {
     if(auth.verifyUser(req) === null){
         return res.status(400).json({
