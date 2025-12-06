@@ -1,20 +1,11 @@
-/*
-    This is our http api for all things auth, which we use to 
-    send authorization requests to our back-end API. Note we`re 
-    using the Axios library for doing this, which is an easy to 
-    use AJAX-based library. We could (and maybe should) use Fetch, 
-    which is a native (to browsers) standard, but Axios is easier
-    to use when sending JSON back and forth and it`s a Promise-
-    based API which helps a lot with asynchronous communication.
-    
-    @author McKilla Gorilla
-*/
+/**
+ * Auth API requests for Playlister Final Project
+ */
 const BASE_URL = 'http://localhost:4000/auth'; 
 
 //helper function to handle fetch requests with credentials 
 async function fetchWithCredentials(url, options = {}){
     const defaultOptions = {
-        //axios.defaults.withCredentials = true
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
@@ -25,6 +16,7 @@ async function fetchWithCredentials(url, options = {}){
         const response = await fetch(url, {...defaultOptions, ...options});
         const hasBody = response.status !== 204 && response.headers.get('content-length') !== '0';
         let data = null;
+
         if (hasBody) {
             const contentType = response.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
@@ -37,6 +29,7 @@ async function fetchWithCredentials(url, options = {}){
                 data = await response.text();
             }
         }
+
         if (!response.ok) {
             const error = new Error(data?.errorMessage || response.statusText || 'Request failed');
             error.response = {
@@ -62,12 +55,6 @@ async function fetchWithCredentials(url, options = {}){
         throw error;
     }
 }
-// THESE ARE ALL THE REQUESTS WE'LL BE MAKING, ALL REQUESTS HAVE A
-// REQUEST METHOD (like get) AND PATH (like /register). SOME ALSO
-// REQUIRE AN id SO THAT THE SERVER KNOWS ON WHICH LIST TO DO ITS
-// WORK, AND SOME REQUIRE DATA, WHICH WE WILL FORMAT HERE, FOR WHEN
-// WE NEED TO PUT THINGS INTO THE DATABASE OR IF WE HAVE SOME
-// CUSTOM FILTERS FOR QUERIES
 
 // export const getLoggedIn = () => api.get(`/loggedIn/`);
 export const getLoggedIn = () => {
@@ -76,12 +63,6 @@ export const getLoggedIn = () => {
     });
 };
 
-// export const loginUser = (email, password) => {
-//     return api.post(`/login/`, {
-//         email : email,
-//         password : password
-//     })
-// }
 export const loginUser = (email, password) => {
     return fetchWithCredentials(`${BASE_URL}/login/`,{
         method: 'POST',
@@ -97,24 +78,17 @@ export const logoutUser = () =>{
         method: 'GET'
     });
 };
-// export const registerUser = (firstName, lastName, email, password, passwordVerify) => {
-//     return api.post(`/register/`, {
-//         firstName : firstName,
-//         lastName : lastName,
-//         email : email,
-//         password : password,
-//         passwordVerify : passwordVerify
-//     })
-// }
-export const registerUser = (firstName, lastName, email, password, passwordVerify) => {
+// Register user - now with username and avatar instead of first/last name
+export const registerUser = (username, email, password, passwordVerify, avatar) => {
     return fetchWithCredentials(`${BASE_URL}/register/`,{
         method: 'POST',
         body : JSON.stringify({
-            firstName : firstName,
-            lastName: lastName, 
+            username: username, 
             email: email,
             password: password,
-            passwordVerify: passwordVerify
+            passwordVerify: passwordVerify,
+            //avatar to default empty string if there is no avatar
+            avatar: avatar | '' 
         })
     });
 };
