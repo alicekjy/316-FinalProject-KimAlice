@@ -4,37 +4,54 @@ const auth = require('../auth')
     Handles: CreatePlaylist, Edit Playlist, Copy Playlist, Delete Playlist
     Play Playlist, Find Playlist (search), sort playlist, add song to playlist
 */
+// Create Playlist - 2.7
 createPlaylist = async (req, res) => {
-    if(auth.verifyUser(req) === null){
-        return res.status(400).json({
-            errorMessage: 'UNAUTHORIZED'
-        })
-    }
-    const body = req.body;
-    console.log("createPlaylist body: " + JSON.stringify(body));
-    if (!body) {
-        return res.status(400).json({
-            success: false,
-            error: 'You must provide a Playlist',
-        })
-    }
-    
-    try {
-        const user = await dbManager.findUserById(req.userId);
-        console.log("user found: " + JSON.stringify(user));
-        
-        const playlist = await dbManager.createPlaylist(body);
-        console.log("playlist created: " + JSON.stringify(playlist));
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
+            });
+        }
+        const db = req.app.locals.db;
+        const user = await db.findUserById(userId);
+
+        if(!user){
+            return res.status(404).json({
+                errorMessage: 'User not found'
+            });
+        }
+        //Generate unique Untitled n name
+        const userPlaylists = await db.findPlaylistsByOwner(userId);
+        let untitledNumber = 0;
+        let playlistName = `Untitled ${untitledNumber}`;
+
+        //next available untitled number
+        while (userPlaylists.some(p=> p.name === playlistName)){
+            untitledNumber++;
+            playlistName = `Untitled ${untitledNumber}`;
+        }
+
+        //create playlist
+        const newPlaylist = await db.createPlaylist({
+            name: playlistName,
+            owner: userId,
+            ownerEmail: user.email,
+            songs: [],
+            listeners: []
+        });
         return res.status(201).json({
-            playlist: playlist
-        })
-    } catch (error) {
-        console.error(error);
-        return res.status(400).json({
-            errorMessage: 'Playlist Not Created!'
-        })
+            success: true,
+            playlist: newPlaylist
+        });
+    }catch(error){
+        console.error('Error creating playlist: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error creating playlist'
+        });
     }
 }
+
 deletePlaylist = async (req, res) => {
     if(auth.verifyUser(req) === null){
         return res.status(400).json({
