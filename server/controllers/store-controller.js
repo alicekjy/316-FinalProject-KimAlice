@@ -38,7 +38,7 @@ createPlaylist = async (req, res) => {
             owner: userId,
             ownerEmail: user.email,
             songs: [],
-            listeners: []
+            playedBy: []
         });
         return res.status(201).json({
             success: true,
@@ -145,7 +145,7 @@ copyPlaylist = async(req, res) => {
             owner: userId,
             ownerEmail: user.email,
             songs: [...originalPlaylist.songs.map(s => s._id)],
-            listeners: []
+            playedBy: []
         });
         //update playlist counts for songs
         for (let song of originalPlaylist.songs){
@@ -406,7 +406,7 @@ function sortPlaylists(playlists, sortBy, sortOrder = 'desc'){
 
         switch (sortBy) {
             case 'listeners':
-                comparison = a.listeners.length - b.listeners.length;
+                comparison = a.playedBy.length - b.playedBy.length;
                 break;
             case 'name':
                 comparison = a.name.localeCompare(b.name);
