@@ -112,53 +112,70 @@ updatePlaylist = async(req, res) => {
     }
 }
 //copy playlist - 2.9
-copyPlaylist = async(req, res) => {
-    try{
+copyPlaylist = async (req, res) => {
+    try {
         const userId = auth.verifyUser(req);
-        if(!userId){
+        if (!userId) {
             return res.status(401).json({
-                errorMessage: 'Unauthorized'                
+                errorMessage: 'Unauthorized'
             });
         }
+
         const db = req.app.locals.db;
         const originalPlaylist = await db.findPlaylistById(req.params.id);
 
-        if(!originalPlaylist){
+        if (!originalPlaylist) {
             return res.status(404).json({
                 errorMessage: 'Playlist not found'
             });
         }
+
         const user = await db.findUserById(userId);
 
-        //create copy name
-        let copyName = `${originalPlaylist.name} - Copy`;
         const userPlaylists = await db.findPlaylistsByOwner(userId);
+        
+        // Create copy name
+        let copyName = `${originalPlaylist.name} - Copy`;
         let copyNumber = 1;
-        //ensure unique name
-        while (userPlaylists.name(p=>p.name ===copyName)){
+
+        // Ensure unique name - check if any playlist has this name
+        while (userPlaylists.some(playlist => playlist.name === copyName)) {
             copyNumber++;
             copyName = `${originalPlaylist.name} - Copy ${copyNumber}`;
         }
-        //deep copy - create new playlist with same songs
+
+        // Extract song IDs
+        const songIds = originalPlaylist.songs.map(song => {
+            if (typeof song === 'object' && song._id) {
+                return song._id;
+            }
+            return song;
+        });
+
+        // Deep copy: create new playlist with same songs
         const copiedPlaylist = await db.createPlaylist({
             name: copyName,
             owner: userId,
             ownerEmail: user.email,
-            songs: [...originalPlaylist.songs.map(s => s._id)],
+            songs: songIds,
             playedBy: []
         });
-        //update playlist counts for songs
-        for (let song of originalPlaylist.songs){
-            await db.updateSongPlaylistCount(song._id);
+
+        // Update playlist counts for songs
+        for (let songId of songIds) {
+            await db.updateSongPlaylistCount(songId);
         }
+
         return res.status(201).json({
             success: true,
             playlist: copiedPlaylist
         });
-    }catch(error){
-        console.error('Error copying playlist: ', error);
+
+    } catch (error) {
+        console.error('Error copying playlist:', error);
         return res.status(500).json({
-            errorMessage: 'Error copying playlist'
+            errorMessage: 'Error copying playlist',
+            details: error.message
         });
     }
 }
@@ -206,34 +223,37 @@ deletePlaylist = async (req, res) => {
     }
 }
 //play playlist - 2.11
-playPlaylist = async(req,res) =>{
-    try{
+playPlaylist = async (req, res) => {
+    try {
         const userId = auth.verifyUser(req);
         const db = req.app.locals.db;
+        
         const playlist = await db.findPlaylistById(req.params.id);
 
-        if(!playlist){
+        if (!playlist) {
             return res.status(404).json({
                 errorMessage: 'Playlist not found'
             });
         }
 
         //add listener if logged in
-        if (userId){
+        if (userId) {
             await db.addListener(req.params.id, userId);
         }
         //increment listen count for each song
-        for(let song of playlist.songs){
-            await db.incrementSongListens(songs._id);
+        for (let song of playlist.songs) {  
+            await db.incrementSongListens(song._id);
         }
         return res.status(200).json({
-            success:true,
+            success: true,
             playlist: playlist
         });
-    }catch(error){
-        console.error('Error playing playlist: ', error);
+
+    } catch (error) {
+        console.error('Error playing playlist:', error);
         return res.status(500).json({
-            errorMessage: 'Error playling playlist'
+            errorMessage: 'Error playing playlist',
+            details: error.message
         });
     }
 }
