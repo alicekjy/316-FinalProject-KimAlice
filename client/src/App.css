@@ -1,0 +1,8 @@
+#root {
+    background-image: linear-gradient(to bottom, #e8cbc0, #636fa4);
+    min-height: 100vh;
+  }
+  
+  #splash-screen {
+    min-height: 100vh;
+  }

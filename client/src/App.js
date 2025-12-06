@@ -1,19 +1,24 @@
-import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import './App.css';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { AuthContextProvider } from './auth';
+import {
+    SplashScreen,
+    LoginScreen,
+    RegisterScreen
+} from './components';
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AuthContextProvider>
-        <div style={{ padding: '50px', textAlign: 'center', color: 'white' }}>
-          <h1>🎵 Playlister</h1>
-          <p>React app is working!</p>
-          <p>Auth context loaded successfully!</p>
-        </div>
-      </AuthContextProvider>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <AuthContextProvider>
+                <Switch>
+                    <Route path="/" exact component={SplashScreen} />
+                    <Route path="/login" exact component={LoginScreen} />
+                    <Route path="/register" exact component={RegisterScreen} />
+                </Switch>
+            </AuthContextProvider>
+        </BrowserRouter>
+    );
 }
 
 export default App;
