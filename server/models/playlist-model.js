@@ -22,10 +22,11 @@ const playlistSchema = new Schema(
             ref: 'Song'
         }],
         //Track distinct listeners who have played the playlist 
-        listeners:[{
-            type: Schema.Types.ObjectId,
+       // Array of User ObjectIds who have listened (distinct listeners)
+        playedBy: [{ 
+            type: Schema.Types.ObjectId, 
             ref: 'User'
-        }]
+}]
     },
     { timestamps: true }
 )
