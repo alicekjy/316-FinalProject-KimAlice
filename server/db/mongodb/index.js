@@ -237,10 +237,10 @@ class MongoDBManager extends DatabaseManager{
             if(!playlist){
                 throw new Error('Playlist not found');
             }
-
-            //add user to listeners if not already there
-            if(!playlist.listeners.includes(userId)){
-                playlist.listeners.push(userId);
+    
+            //add user to playedBy if not already there
+            if(!playlist.playedBy.includes(userId)){
+                playlist.playedBy.push(userId);
                 await playlist.save();
             }
             return playlist;
