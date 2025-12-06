@@ -111,6 +111,57 @@ updatePlaylist = async(req, res) => {
         });
     }
 }
+//copy playlist - 2.9
+copyPlaylist = async(req, res) => {
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'                
+            });
+        }
+        const db = req.app.locals.db;
+        const originalPlaylist = await db.findPlaylistById(req.params.id);
+
+        if(!originalPlaylist){
+            return res.status(404).json({
+                errorMessage: 'Playlist not found'
+            });
+        }
+        const user = await db.findUserById(userId);
+
+        //create copy name
+        let copyName = `${originalPlaylist.name} - Copy`;
+        const userPlaylists = await db.findPlaylistsByOwner(userId);
+        let copyNumber = 1;
+        //ensure unique name
+        while (userPlaylists.name(p=>p.name ===copyName)){
+            copyNumber++;
+            copyName = `${originalPlaylist.name} - Copy ${copyNumber}`;
+        }
+        //deep copy - create new playlist with same songs
+        const copiedPlaylist = await db.createPlaylist({
+            name: copyName,
+            owner: userId,
+            ownerEmail: user.email,
+            songs: [...originalPlaylist.songs.map(s => s._id)],
+            listeners: []
+        });
+        //update playlist counts for songs
+        for (let song of originalPlaylist.songs){
+            await db.updateSongPlaylistCount(song._id);
+        }
+        return res.status(201).json({
+            success: true,
+            playlist: copiedPlaylist
+        });
+    }catch(error){
+        console.error('Error copying playlist: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error copying playlist'
+        });
+    }
+}
 
 deletePlaylist = async (req, res) => {
     if(auth.verifyUser(req) === null){
