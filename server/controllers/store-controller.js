@@ -51,6 +51,66 @@ createPlaylist = async (req, res) => {
         });
     }
 }
+//Edit playlist - update name or songs - 2.8
+updatePlaylist = async(req, res) => {
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
+            });
+        }
+
+        const db = req.app.locals.db;
+        const playlist = await db.findPlaylistById(req.params.id);
+
+        if(!playlist){
+            return res.status(404).json({
+                errorMessage: 'Playlist not found'
+            });
+        }
+
+        //check ownership
+        if(playlist.owner._id.toString() !== userId.toString()){
+            return res.status(403).json({
+                errorMessage: 'You can only edit your own playlists'
+            });
+        }
+        const {name, songs} = req.body; 
+
+        //if name is being changed, check uniqueness for this user
+        if(name && name !== playlist.name){
+            const userPlaylists = await db.findPlaylistsByOwner(userId);
+            if(userPlaylists.some(p => p.name === name && p._id.toString() !==req.params.id)){
+                return res.status(400).json({
+                    errorMessage: 'You already have a playlist with this name'
+                });
+            }
+        }
+
+        //update playlist
+        let updateData = {};
+        if(name) updateData.name = name;
+        if (songs !== undefined ) updateData.songs = songs;
+
+        const updatedPlaylist = await db.updatePlaylist(req.params.id, updateData);
+        //updated numPlaylists for each song
+        if(songs !== undefined){
+            for(let songId of songs){
+                await db.updateSongPlaylistCount(songId);
+            }
+        }
+        return res.status(200).json({
+            success: true,
+            playlist: updatedPlaylist
+        });
+    }catch(error){
+        console.error('Error updating playlist: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error updating playlist'
+        });
+    }
+}
 
 deletePlaylist = async (req, res) => {
     if(auth.verifyUser(req) === null){
