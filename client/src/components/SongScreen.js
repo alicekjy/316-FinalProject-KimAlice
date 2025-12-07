@@ -9,143 +9,130 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import EditIcon from '@mui/icons-material/Edit';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 
-export default function HomeScreen() {
+export default function SongScreen() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
-    const [searchText, setSearchText] = useState('');
-    const [sortBy, setSortBy] = useState('name');
+    
+    // Search/Filter states
+    const [searchTitle, setSearchTitle] = useState('');
+    const [searchArtist, setSearchArtist] = useState('');
+    const [searchYear, setSearchYear] = useState('');
+    const [sortBy, setSortBy] = useState('title');
     const [sortOrder, setSortOrder] = useState('asc');
-    const defaultGuestFilters = {
-        playlistName: '',
-        ownerUsername: '',
-        songTitle: '',
-        songArtist: '',
-        songYear: ''
-    };
-    const [guestFilters, setGuestFilters] = useState(defaultGuestFilters);
-    const [guestSortBy, setGuestSortBy] = useState('listeners');
-    const [guestSortOrder, setGuestSortOrder] = useState('desc');
-
-    function loadGuestPlaylists(overrides = {}) {
-        store.loadPlaylists({
-            ...guestFilters,
-            sortBy: guestSortBy,
-            sortOrder: guestSortOrder,
-            ...overrides
-        });
-    }
+    
+    // Modal states
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [selectedSong, setSelectedSong] = useState(null);
+    
+    // Form states
+    const [songTitle, setSongTitle] = useState('');
+    const [songArtist, setSongArtist] = useState('');
+    const [songYear, setSongYear] = useState('');
+    const [songYoutubeId, setSongYoutubeId] = useState('');
 
     useEffect(() => {
-        if (auth.loggedIn) {
-            store.loadPlaylists();
-        } else {
-            loadGuestPlaylists();
-        }
+        store.loadSongs();
+        // eslint-disable-next-line
+    }, []);
 
-    }, [auth.loggedIn]);
-
-    const handleCreatePlaylist = () => {
-        store.createPlaylist();
+    const handleOpenAdd = () => {
+        setSongTitle('');
+        setSongArtist('');
+        setSongYear('');
+        setSongYoutubeId('');
+        setAddDialogOpen(true);
     }
 
-    const handleDeletePlaylist = (id, event) => {
-        event.stopPropagation();
-        if (window.confirm('Are you sure you want to delete this playlist?')) {
-            store.deletePlaylist(id);
-        }
-    }
-
-    const handleCopyPlaylist = (id, event) => {
-        event.stopPropagation();
-        store.copyPlaylist(id);
-    }
-
-    const handlePlayPlaylist = async (id, event) => {
-        event.stopPropagation();
-        try {
-            const api = require('../store/requests').default;
-            await api.playPlaylist(id);
-        } catch (error) {
-            console.error('Failed to play playlist:', error);
+    const handleAdd = async () => {
+        const year = parseInt(songYear);
+        if (songTitle && songArtist && year && songYoutubeId) {
+            await store.createSong(songTitle, songArtist, year, songYoutubeId);
+            setAddDialogOpen(false);
         }
     }
 
-    const handlePlaylistClick = (id) => {
-        if (!auth.loggedIn) return;
-        store.setCurrentPlaylist(id);
+    const handleOpenEdit = (song) => {
+        setSelectedSong(song);
+        setSongTitle(song.title);
+        setSongArtist(song.artist);
+        setSongYear(song.year.toString());
+        setSongYoutubeId(song.youtubeId);
+        setEditDialogOpen(true);
     }
 
-    const handleGuestFilterChange = (field, value) => {
-        setGuestFilters(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
-
-    const handleGuestSearch = () => {
-        loadGuestPlaylists();
-    };
-
-    const handleGuestSortChange = (field, value) => {
-        if (field === 'sortBy') {
-            setGuestSortBy(value);
-            loadGuestPlaylists({ sortBy: value });
-        } else {
-            setGuestSortOrder(value);
-            loadGuestPlaylists({ sortOrder: value });
+    const handleEdit = async () => {
+        if (selectedSong) {
+            const year = parseInt(songYear);
+            if (songTitle && songArtist && year && songYoutubeId) {
+                await store.updateSong(selectedSong._id, songTitle, songArtist, year, songYoutubeId);
+                setEditDialogOpen(false);
+            }
         }
-    };
-
-    const handleClearGuestFilters = () => {
-        setGuestFilters(defaultGuestFilters);
-        setGuestSortBy('listeners');
-        setGuestSortOrder('desc');
-        store.loadPlaylists({
-            ...defaultGuestFilters,
-            sortBy: 'listeners',
-            sortOrder: 'desc'
-        });
     }
 
-    //filter and sort playlist
-    const getFilteredPlaylists = () => {
-        let filtered = [...store.playlists];
+    const handleOpenDelete = (song) => {
+        setSelectedSong(song);
+        setDeleteDialogOpen(true);
+    }
+
+    const handleDelete = async () => {
+        if (selectedSong) {
+            await store.deleteSong(selectedSong._id);
+            setDeleteDialogOpen(false);
+        }
+    }
+
+    // Filter and sort songs
+    const getFilteredSongs = () => {
+        let filtered = [...store.songs];
         
-        // Apply search
-        if (searchText) {
-            filtered = filtered.filter(playlist => 
-                playlist.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                (playlist.owner && playlist.owner.username && 
-                 playlist.owner.username.toLowerCase().includes(searchText.toLowerCase()))
+        if (searchTitle) {
+            filtered = filtered.filter(song => 
+                song.title.toLowerCase().includes(searchTitle.toLowerCase())
+            );
+        }
+        if (searchArtist) {
+            filtered = filtered.filter(song => 
+                song.artist.toLowerCase().includes(searchArtist.toLowerCase())
+            );
+        }
+        if (searchYear) {
+            filtered = filtered.filter(song => 
+                song.year.toString().includes(searchYear)
             );
         }
 
-        //sorting
         filtered.sort((a, b) => {
             let comparison = 0;
             switch (sortBy) {
-                case 'name':
-                    comparison = a.name.localeCompare(b.name);
+                case 'title':
+                    comparison = a.title.localeCompare(b.title);
                     break;
-                case 'songs':
-                    comparison = a.songs.length - b.songs.length;
+                case 'artist':
+                    comparison = a.artist.localeCompare(b.artist);
+                    break;
+                case 'year':
+                    comparison = a.year - b.year;
                     break;
                 case 'listens':
-                    comparison = (a.playedBy?.length || 0) - (b.playedBy?.length || 0);
+                    comparison = (a.numListens || 0) - (b.numListens || 0);
                     break;
-                case 'owner':
-                    const ownerA = a.owner?.username || a.ownerEmail || '';
-                    const ownerB = b.owner?.username || b.ownerEmail || '';
-                    comparison = ownerA.localeCompare(ownerB);
+                case 'playlists':
+                    comparison = (a.numPlaylists || 0) - (b.numPlaylists || 0);
                     break;
                 default:
                     comparison = 0;
@@ -156,177 +143,8 @@ export default function HomeScreen() {
         return filtered;
     }
 
-    const filteredPlaylists = getFilteredPlaylists();
-    const playlistsToShow = auth.loggedIn ? filteredPlaylists : (store.playlists || []);
+    const filteredSongs = getFilteredSongs();
 
-    //guest view
-    if (!auth.loggedIn) {
-        return (
-            <Box sx={{ padding: 3 }}>
-                <Typography variant="h5" sx={{ color: 'white', mb: 1 }}>
-                    Browse Playlists as Guest
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mb: 3 }}>
-                    Search community playlists by name, owner, or songs. Login to save and edit your own.
-                </Typography>
-
-                <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, mb: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Playlist Name"
-                                placeholder="Search playlist titles"
-                                value={guestFilters.playlistName}
-                                onChange={(e) => handleGuestFilterChange('playlistName', e.target.value)}
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Owner Username"
-                                placeholder="Creator username"
-                                value={guestFilters.ownerUsername}
-                                onChange={(e) => handleGuestFilterChange('ownerUsername', e.target.value)}
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Song Title"
-                                placeholder="Song title in playlist"
-                                value={guestFilters.songTitle}
-                                onChange={(e) => handleGuestFilterChange('songTitle', e.target.value)}
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Song Artist"
-                                placeholder="Artist in playlist"
-                                value={guestFilters.songArtist}
-                                onChange={(e) => handleGuestFilterChange('songArtist', e.target.value)}
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={2}>
-                            <TextField
-                                fullWidth
-                                label="Song Year"
-                                placeholder="Year"
-                                value={guestFilters.songYear}
-                                onChange={(e) => handleGuestFilterChange('songYear', e.target.value)}
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Sort By</InputLabel>
-                                <Select
-                                    value={guestSortBy}
-                                    onChange={(e) => handleGuestSortChange('sortBy', e.target.value)}
-                                    label="Sort By"
-                                >
-                                    <MenuItem value="listeners">Listeners</MenuItem>
-                                    <MenuItem value="name">Name</MenuItem>
-                                    <MenuItem value="owner">Owner</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={3}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>Order</InputLabel>
-                                <Select
-                                    value={guestSortOrder}
-                                    onChange={(e) => handleGuestSortChange('sortOrder', e.target.value)}
-                                    label="Order"
-                                >
-                                    <MenuItem value="desc">Descending</MenuItem>
-                                    <MenuItem value="asc">Ascending</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Box sx={{ display: 'flex', gap: 1, height: '100%' }}>
-                                <Button 
-                                    variant="contained" 
-                                    color="primary" 
-                                    onClick={handleGuestSearch}
-                                    fullWidth
-                                >
-                                    Search
-                                </Button>
-                                <Button 
-                                    variant="outlined" 
-                                    color="secondary" 
-                                    onClick={handleClearGuestFilters}
-                                    fullWidth
-                                >
-                                    Reset
-                                </Button>
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </Box>
-
-                {playlistsToShow.length === 0 ? (
-                    <Box sx={{
-                        bgcolor: 'white',
-                        borderRadius: 2,
-                        padding: 4,
-                        textAlign: 'center'
-                    }}>
-                        <Typography variant="h6" sx={{ mb: 2 }}>
-                            No playlists found
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Try adjusting your search or sort options.
-                        </Typography>
-                        <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center' }}>
-                            <Button variant="contained" href="/login">Login</Button>
-                            <Button variant="outlined" href="/register">Create Account</Button>
-                        </Box>
-                    </Box>
-                ) : (
-                    <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                        {playlistsToShow.map((playlist) => {
-                            const ownerName = playlist.owner?.username || playlist.ownerEmail || 'Unknown owner';
-                            const songCount = playlist.songs?.length || 0;
-                            const listenerCount = playlist.playedBy?.length || 0;
-
-                            return (
-                                <ListItem
-                                    key={playlist._id}
-                                    sx={{
-                                        borderBottom: '1px solid #e0e0e0',
-                                        cursor: 'default'
-                                    }}
-                                >
-                                    <ListItemText
-                                        primary={playlist.name}
-                                        secondary={`${ownerName} • ${songCount} song${songCount !== 1 ? 's' : ''} • ${listenerCount} listener${listenerCount !== 1 ? 's' : ''}`}
-                                    />
-                                    <IconButton
-                                        edge="end"
-                                        aria-label="play"
-                                        sx={{ mr: 1 }}
-                                        onClick={(e) => handlePlayPlaylist(playlist._id, e)}
-                                    >
-                                        <PlayArrowIcon />
-                                    </IconButton>
-                                </ListItem>
-                            );
-                        })}
-                    </List>
-                )}
-            </Box>
-        );
-    }
-
-    //logged in view
     return (
         <Box sx={{ padding: 3 }}>
             <Box sx={{ 
@@ -336,31 +154,50 @@ export default function HomeScreen() {
                 mb: 3
             }}>
                 <Typography variant="h5" sx={{ color: 'white' }}>
-                    My Playlists ({playlistsToShow.length})
+                    Song Catalog ({filteredSongs.length} songs)
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary"
-                    onClick={handleCreatePlaylist}
-                >
-                    + New Playlist
-                </Button>
+                {auth.loggedIn && (
+                    <Button 
+                        variant="contained" 
+                        color="primary"
+                        onClick={handleOpenAdd}
+                    >
+                        + Add Song
+                    </Button>
+                )}
             </Box>
 
-            {/* Search and Sort Box */}
+            {/* Search/Filter Box */}
             <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, mb: 2 }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} sm={3}>
                         <TextField
                             fullWidth
-                            label="Search Playlists"
-                            placeholder="Search by name or owner..."
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            label="Search Title"
+                            value={searchTitle}
+                            onChange={(e) => setSearchTitle(e.target.value)}
                             size="small"
                         />
                     </Grid>
                     <Grid item xs={12} sm={3}>
+                        <TextField
+                            fullWidth
+                            label="Search Artist"
+                            value={searchArtist}
+                            onChange={(e) => setSearchArtist(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <TextField
+                            fullWidth
+                            label="Year"
+                            value={searchYear}
+                            onChange={(e) => setSearchYear(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Sort By</InputLabel>
                             <Select
@@ -368,14 +205,15 @@ export default function HomeScreen() {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 label="Sort By"
                             >
-                                <MenuItem value="name">Name</MenuItem>
-                                <MenuItem value="songs">Song Count</MenuItem>
+                                <MenuItem value="title">Title</MenuItem>
+                                <MenuItem value="artist">Artist</MenuItem>
+                                <MenuItem value="year">Year</MenuItem>
                                 <MenuItem value="listens">Listens</MenuItem>
-                                <MenuItem value="owner">Owner</MenuItem>
+                                <MenuItem value="playlists">Playlists</MenuItem>
                             </Select>
                         </FormControl>
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid item xs={12} sm={2}>
                         <FormControl fullWidth size="small">
                             <InputLabel>Order</InputLabel>
                             <Select
@@ -391,7 +229,8 @@ export default function HomeScreen() {
                 </Grid>
             </Box>
 
-            {playlistsToShow.length === 0 ? (
+            {/* Songs List */}
+            {filteredSongs.length === 0 ? (
                 <Box sx={{
                     bgcolor: 'white',
                     borderRadius: 2,
@@ -399,68 +238,154 @@ export default function HomeScreen() {
                     textAlign: 'center'
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                        {store.playlists.length === 0 
-                            ? "You don't have any playlists yet"
-                            : "No playlists found"}
+                        No songs found
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {store.playlists.length === 0 
-                            ? 'Click "New Playlist" to create your first playlist!'
+                        {store.songs.length === 0 
+                            ? (auth.loggedIn ? 'Click "Add Song" to add the first song!' : 'Login to add songs')
                             : 'Try different search criteria'}
                     </Typography>
                 </Box>
             ) : (
                 <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                    {playlistsToShow.map((playlist) => (
-                        <ListItem
-                            key={playlist._id}
-                            sx={{
-                                borderBottom: '1px solid #e0e0e0',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                    bgcolor: '#f5f5f5'
-                                }
-                            }}
-                            onClick={() => handlePlaylistClick(playlist._id)}
-                        >
-                            <ListItemText
-                                primary={playlist.name}
-                                secondary={
+                    {filteredSongs.map((song) => {
+                        const isOwner = auth.loggedIn && auth.user && song.addedBy === auth.user._id;
+                        
+                        return (
+                            <ListItem
+                                key={song._id}
+                                sx={{
+                                    borderBottom: '1px solid #e0e0e0',
+                                    '&:last-child': { borderBottom: 'none' }
+                                }}
+                            >
+                                <ListItemText
+                                    primary={song.title}
+                                    secondary={`${song.artist} • ${song.year} • Listens: ${song.numListens || 0} • In ${song.numPlaylists || 0} playlist(s)`}
+                                />
+                                {isOwner && (
                                     <>
-                                        {playlist.songs.length} song{playlist.songs.length !== 1 ? 's' : ''}
-                                        {playlist.playedBy && playlist.playedBy.length > 0 && 
-                                            ` • ${playlist.playedBy.length} listener${playlist.playedBy.length !== 1 ? 's' : ''}`
-                                        }
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="edit"
+                                            sx={{ mr: 1 }}
+                                            onClick={() => handleOpenEdit(song)}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="delete"
+                                            onClick={() => handleOpenDelete(song)}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
                                     </>
-                                }
-                            />
-                            <IconButton
-                                edge="end"
-                                aria-label="play"
-                                sx={{ mr: 1 }}
-                                onClick={(e) => handlePlayPlaylist(playlist._id, e)}
-                            >
-                                <PlayArrowIcon />
-                            </IconButton>
-                            <IconButton
-                                edge="end"
-                                aria-label="copy"
-                                sx={{ mr: 1 }}
-                                onClick={(e) => handleCopyPlaylist(playlist._id, e)}
-                            >
-                                <ContentCopyIcon />
-                            </IconButton>
-                            <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={(e) => handleDeletePlaylist(playlist._id, e)}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                        </ListItem>
-                    ))}
+                                )}
+                            </ListItem>
+                        );
+                    })}
                 </List>
             )}
+
+            {/* Add Song Modal */}
+            <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Add New Song</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Title"
+                        value={songTitle}
+                        onChange={(e) => setSongTitle(e.target.value)}
+                        margin="normal"
+                        autoFocus
+                    />
+                    <TextField
+                        fullWidth
+                        label="Artist"
+                        value={songArtist}
+                        onChange={(e) => setSongArtist(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Year"
+                        type="number"
+                        value={songYear}
+                        onChange={(e) => setSongYear(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="YouTube Video ID"
+                        value={songYoutubeId}
+                        onChange={(e) => setSongYoutubeId(e.target.value)}
+                        margin="normal"
+                        helperText="Example: dQw4w9WgXcQ (from youtube.com/watch?v=dQw4w9WgXcQ)"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleAdd} variant="contained">Add Song</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Edit Song Modal */}
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Edit Song</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Title"
+                        value={songTitle}
+                        onChange={(e) => setSongTitle(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Artist"
+                        value={songArtist}
+                        onChange={(e) => setSongArtist(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Year"
+                        type="number"
+                        value={songYear}
+                        onChange={(e) => setSongYear(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="YouTube Video ID"
+                        value={songYoutubeId}
+                        onChange={(e) => setSongYoutubeId(e.target.value)}
+                        margin="normal"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleEdit} variant="contained">Save Changes</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Delete Song Modal */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle>Delete Song</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to delete "{selectedSong?.title}"?
+                    </Typography>
+                    <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                        This will remove it from all playlists and cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleDelete} variant="contained" color="error">Delete</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

@@ -47,7 +47,7 @@ export default function AppBanner() {
         if (store.currentPlaylist) {
             store.closeCurrentPlaylist();
         }
-        history.push('/home');
+        history.push('/playlists');
     }
 
     const menuId = 'primary-search-account-menu';

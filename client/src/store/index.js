@@ -141,7 +141,7 @@ function GlobalStoreContextProvider(props) {
             type: GlobalStoreActionType.CLOSE_CURRENT_PLAYLIST,
             payload: null
         });
-        history.push('/home');
+        history.push('/playlists');
     }
 
     //song functions

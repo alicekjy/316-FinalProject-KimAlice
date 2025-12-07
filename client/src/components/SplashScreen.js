@@ -10,7 +10,7 @@ export default function SplashScreen() {
     const history = useHistory();
 
     const handleGuestContinue = () => {
-        history.push('/home');
+        history.push('/playlists');
     }
 
     const handleLogin = () => {

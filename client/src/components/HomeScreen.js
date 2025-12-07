@@ -24,12 +24,31 @@ export default function HomeScreen() {
     const [searchText, setSearchText] = useState('');
     const [sortBy, setSortBy] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [allPlaylists, setAllPlaylists] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (auth.loggedIn) {
-            store.loadPlaylists();
-        }
-
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                const api = require('../store/requests').default;
+                const response = await api.getPlaylists();
+                if (response.ok) {
+                    if (auth.loggedIn) {
+                        // For logged-in users, also load through store
+                        await store.loadPlaylists();
+                    } else {
+                        // For guests, use the fetched playlists
+                        setAllPlaylists(response.data.playlists || []);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading playlists:', error);
+            }
+            setLoading(false);
+        };
+        loadData();
+        // eslint-disable-next-line
     }, [auth.loggedIn]);
 
     const handleCreatePlaylist = () => {
@@ -53,29 +72,43 @@ export default function HomeScreen() {
         try {
             const api = require('../store/requests').default;
             await api.playPlaylist(id);
+            // Reload playlists to update play count
+            const response = await api.getPlaylists();
+            if (response.ok) {
+                if (!auth.loggedIn) {
+                    setAllPlaylists(response.data.playlists || []);
+                }
+            }
         } catch (error) {
             console.error('Failed to play playlist:', error);
         }
     }
 
     const handlePlaylistClick = (id) => {
-        store.setCurrentPlaylist(id);
+        if (auth.loggedIn) {
+            store.setCurrentPlaylist(id);
+        } else {
+            alert('Please login to view and edit playlist details');
+        }
     }
 
-    //filter and sort playlist
+    // Filter and sort playlists
     const getFilteredPlaylists = () => {
-        let filtered = [...store.playlists];
+        // Get the right playlist source
+        const source = auth.loggedIn ? store.playlists : allPlaylists;
+        let filtered = [...source];
         
-        // Apply search
+        // Apply search filter
         if (searchText) {
-            filtered = filtered.filter(playlist => 
-                playlist.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                (playlist.owner && playlist.owner.username && 
-                 playlist.owner.username.toLowerCase().includes(searchText.toLowerCase()))
-            );
+            filtered = filtered.filter(playlist => {
+                const matchName = playlist.name.toLowerCase().includes(searchText.toLowerCase());
+                const matchOwner = playlist.owner?.username?.toLowerCase().includes(searchText.toLowerCase()) ||
+                                 playlist.ownerEmail?.toLowerCase().includes(searchText.toLowerCase());
+                return matchName || matchOwner;
+            });
         }
 
-        //sorting
+        // Apply sorting
         filtered.sort((a, b) => {
             let comparison = 0;
             switch (sortBy) {
@@ -104,36 +137,18 @@ export default function HomeScreen() {
 
     const filteredPlaylists = getFilteredPlaylists();
 
-    //guest view
-    if (!auth.loggedIn) {
+    // LOADING STATE
+    if (loading) {
         return (
-            <Box sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '70vh',
-                padding: 3
-            }}>
-                <Typography variant="h4" sx={{ color: 'white', mb: 3 }}>
-                    Welcome, Guest!
+            <Box sx={{ padding: 3 }}>
+                <Typography variant="h5" sx={{ color: 'white' }}>
+                    Loading playlists...
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', mb: 3, textAlign: 'center' }}>
-                    You're browsing as a guest. Create an account or login to manage your own playlists.
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" href="/login">
-                        Login
-                    </Button>
-                    <Button variant="contained" color="secondary" href="/register">
-                        Create Account
-                    </Button>
-                </Box>
             </Box>
         );
     }
 
-    //logged in view
+    // PLAYLISTS VIEW (works for both guest and logged-in)
     return (
         <Box sx={{ padding: 3 }}>
             <Box sx={{ 
@@ -143,15 +158,29 @@ export default function HomeScreen() {
                 mb: 3
             }}>
                 <Typography variant="h5" sx={{ color: 'white' }}>
-                    My Playlists ({filteredPlaylists.length})
+                    {auth.loggedIn 
+                        ? `My Playlists (${filteredPlaylists.length})`
+                        : `All Playlists (${filteredPlaylists.length})`
+                    }
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary"
-                    onClick={handleCreatePlaylist}
-                >
-                    + New Playlist
-                </Button>
+                {auth.loggedIn ? (
+                    <Button 
+                        variant="contained" 
+                        color="primary"
+                        onClick={handleCreatePlaylist}
+                    >
+                        + New Playlist
+                    </Button>
+                ) : (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button variant="contained" size="small" href="/login">
+                            Login
+                        </Button>
+                        <Button variant="contained" color="secondary" size="small" href="/register">
+                            Sign Up
+                        </Button>
+                    </Box>
+                )}
             </Box>
 
             {/* Search and Sort Box */}
@@ -198,6 +227,7 @@ export default function HomeScreen() {
                 </Grid>
             </Box>
 
+            {/* Playlists List */}
             {filteredPlaylists.length === 0 ? (
                 <Box sx={{
                     bgcolor: 'white',
@@ -206,66 +236,81 @@ export default function HomeScreen() {
                     textAlign: 'center'
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                        {store.playlists.length === 0 
+                        {auth.loggedIn && store.playlists.length === 0
                             ? "You don't have any playlists yet"
+                            : !auth.loggedIn && allPlaylists.length === 0
+                            ? "No playlists available yet"
                             : "No playlists found"}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {store.playlists.length === 0 
+                        {auth.loggedIn && store.playlists.length === 0
                             ? 'Click "New Playlist" to create your first playlist!'
-                            : 'Try different search criteria'}
+                            : searchText
+                            ? 'Try different search criteria'
+                            : 'Check back later for new playlists'}
                     </Typography>
                 </Box>
             ) : (
                 <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                    {filteredPlaylists.map((playlist) => (
-                        <ListItem
-                            key={playlist._id}
-                            sx={{
-                                borderBottom: '1px solid #e0e0e0',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                    bgcolor: '#f5f5f5'
-                                }
-                            }}
-                            onClick={() => handlePlaylistClick(playlist._id)}
-                        >
-                            <ListItemText
-                                primary={playlist.name}
-                                secondary={
+                    {filteredPlaylists.map((playlist) => {
+                        const isOwner = auth.loggedIn && auth.user && playlist.owner?._id === auth.user._id;
+                        
+                        return (
+                            <ListItem
+                                key={playlist._id}
+                                sx={{
+                                    borderBottom: '1px solid #e0e0e0',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        bgcolor: '#f5f5f5'
+                                    },
+                                    '&:last-child': { borderBottom: 'none' }
+                                }}
+                                onClick={() => handlePlaylistClick(playlist._id)}
+                            >
+                                <ListItemText
+                                    primary={playlist.name}
+                                    secondary={
+                                        <>
+                                            By: {playlist.owner?.username || playlist.ownerEmail || 'Unknown'}
+                                            {' • '}
+                                            {playlist.songs.length} song{playlist.songs.length !== 1 ? 's' : ''}
+                                            {playlist.playedBy && playlist.playedBy.length > 0 && 
+                                                ` • ${playlist.playedBy.length} listener${playlist.playedBy.length !== 1 ? 's' : ''}`
+                                            }
+                                        </>
+                                    }
+                                />
+                                <IconButton
+                                    edge="end"
+                                    aria-label="play"
+                                    sx={{ mr: 1 }}
+                                    onClick={(e) => handlePlayPlaylist(playlist._id, e)}
+                                >
+                                    <PlayArrowIcon />
+                                </IconButton>
+                                {isOwner && (
                                     <>
-                                        {playlist.songs.length} song{playlist.songs.length !== 1 ? 's' : ''}
-                                        {playlist.playedBy && playlist.playedBy.length > 0 && 
-                                            ` • ${playlist.playedBy.length} listener${playlist.playedBy.length !== 1 ? 's' : ''}`
-                                        }
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="copy"
+                                            sx={{ mr: 1 }}
+                                            onClick={(e) => handleCopyPlaylist(playlist._id, e)}
+                                        >
+                                            <ContentCopyIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            edge="end"
+                                            aria-label="delete"
+                                            onClick={(e) => handleDeletePlaylist(playlist._id, e)}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
                                     </>
-                                }
-                            />
-                            <IconButton
-                                edge="end"
-                                aria-label="play"
-                                sx={{ mr: 1 }}
-                                onClick={(e) => handlePlayPlaylist(playlist._id, e)}
-                            >
-                                <PlayArrowIcon />
-                            </IconButton>
-                            <IconButton
-                                edge="end"
-                                aria-label="copy"
-                                sx={{ mr: 1 }}
-                                onClick={(e) => handleCopyPlaylist(playlist._id, e)}
-                            >
-                                <ContentCopyIcon />
-                            </IconButton>
-                            <IconButton
-                                edge="end"
-                                aria-label="delete"
-                                onClick={(e) => handleDeletePlaylist(playlist._id, e)}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                        </ListItem>
-                    ))}
+                                )}
+                            </ListItem>
+                        );
+                    })}
                 </List>
             )}
         </Box>
