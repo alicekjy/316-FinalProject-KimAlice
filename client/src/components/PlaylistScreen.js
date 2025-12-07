@@ -28,7 +28,7 @@ export default function PlaylistScreen() {
         if (id) {
             store.setCurrentPlaylist(id);
         }
-        // 
+        
     }, [id]);
 
     // Update display name whenever playlist changes

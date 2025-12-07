@@ -48,7 +48,7 @@ export default function SongsScreen() {
         if (auth.loggedIn) {
             store.loadPlaylists();
         }
-        // eslint-disable-next-line
+        
     }, [auth.loggedIn]);
 
     const handleCreateSong = async () => {
