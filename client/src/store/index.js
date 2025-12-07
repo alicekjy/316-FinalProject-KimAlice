@@ -145,5 +145,48 @@ function GlobalStoreContextProvider(props) {
         history.push('/home');
     }
 
-    
+    // song functions
+    store.loadSongs = async function (){
+        try{
+            const response = await api.getSongs();
+            if(response.status === 200){
+                storeReducer({
+                    type: GlobalStoreActionType.LOAD_SONGS,
+                    payload: response.data.songs
+                })
+            }
+        }catch(error){
+            console.error('Failed to load songs: ', error);
+        }
+    }
+
+    store.createSongs = async function (title, artist, year, youtubeId){
+        try{
+            const response = await api.createSong(title, artist,year,youtubeId);
+            if(response.status === 201){
+                store.loadSongs();
+            }
+        }catch(error){
+            console.error('Failed to create song: ', error);
+        }
+    }
+
+    store.deleteSong = async function (id){
+        try{
+            const response = await api.deleteSong(id);
+            if(response.status === 200){
+                store.loadSongs();
+            }
+        } catch(error){
+            console.error('Failed to delete song: ', error);
+        }
+    }
+    return (
+        <GlobalStoreContext.Provider value = {{store}}>
+            {props.children}
+        </GlobalStoreContext.Provider>
+    );
 }
+
+export default GlobalStoreContext;
+export {GlobalStoreContextProvider};
