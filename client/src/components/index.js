@@ -6,6 +6,7 @@ import HomeScreen from './HomeScreen';
 import PlaylistScreen from './PlaylistScreen';
 import SongScreen from './SongScreen';
 import YouTubePlayer from './YouTubePlayer';
+import EditAccountScreen from './EditAccountScreen';
 
 export {
     SplashScreen,
@@ -15,5 +16,6 @@ export {
     HomeScreen,
     PlaylistScreen,
     SongScreen,
-    YouTubePlayer
+    YouTubePlayer,
+    EditAccountScreen
 }
