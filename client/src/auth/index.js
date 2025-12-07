@@ -116,7 +116,7 @@ function AuthContextProvider(props) {
                         errorMessage: null
                     }
                 })
-                history.push("/");
+                history.push("/home");
             }
         } catch(error) {
             const errorMessage = error?.response?.data?.errorMessage || 'Login failed.';
