@@ -11,6 +11,7 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -19,11 +20,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import Grid from '@mui/material/Grid';
 
-export default function SongScreen() {
+export default function SongsScreen() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [editingSong, setEditingSong] = useState(null);
     const [newSongTitle, setNewSongTitle] = useState('');
     const [newSongArtist, setNewSongArtist] = useState('');
     const [newSongYear, setNewSongYear] = useState('');
@@ -31,25 +35,52 @@ export default function SongScreen() {
     const [addToPlaylistDialogOpen, setAddToPlaylistDialogOpen] = useState(false);
     const [selectedSong, setSelectedSong] = useState(null);
     const [selectedPlaylistId, setSelectedPlaylistId] = useState('');
+    
+    // Search/Filter states
+    const [searchTitle, setSearchTitle] = useState('');
+    const [searchArtist, setSearchArtist] = useState('');
+    const [searchYear, setSearchYear] = useState('');
+    const [sortBy, setSortBy] = useState('title');
+    const [sortOrder, setSortOrder] = useState('asc');
 
     useEffect(() => {
         store.loadSongs();
         if (auth.loggedIn) {
             store.loadPlaylists();
         }
-        
+        // eslint-disable-next-line
     }, [auth.loggedIn]);
 
-    const handleCreateSong = () => {
+    const handleCreateSong = async () => {
         const year = parseInt(newSongYear);
         if (newSongTitle && newSongArtist && year && newSongYoutubeId) {
-            store.createSong(newSongTitle, newSongArtist, year, newSongYoutubeId);
+            await store.createSong(newSongTitle, newSongArtist, year, newSongYoutubeId);
             setNewSongTitle('');
             setNewSongArtist('');
             setNewSongYear('');
             setNewSongYoutubeId('');
             setAddDialogOpen(false);
         }
+    }
+
+    const handleEditSong = async () => {
+        if (editingSong) {
+            const year = parseInt(newSongYear);
+            if (newSongTitle && newSongArtist && year && newSongYoutubeId) {
+                await store.updateSong(editingSong._id, newSongTitle, newSongArtist, year, newSongYoutubeId);
+                setEditDialogOpen(false);
+                setEditingSong(null);
+            }
+        }
+    }
+
+    const handleOpenEdit = (song) => {
+        setEditingSong(song);
+        setNewSongTitle(song.title);
+        setNewSongArtist(song.artist);
+        setNewSongYear(song.year.toString());
+        setNewSongYoutubeId(song.youtubeId);
+        setEditDialogOpen(true);
     }
 
     const handleDeleteSong = (id) => {
@@ -78,6 +109,57 @@ export default function SongScreen() {
         }
     }
 
+    // Filter and sort songs
+    const getFilteredSongs = () => {
+        let filtered = [...store.songs];
+        
+        // Apply filters
+        if (searchTitle) {
+            filtered = filtered.filter(song => 
+                song.title.toLowerCase().includes(searchTitle.toLowerCase())
+            );
+        }
+        if (searchArtist) {
+            filtered = filtered.filter(song => 
+                song.artist.toLowerCase().includes(searchArtist.toLowerCase())
+            );
+        }
+        if (searchYear) {
+            filtered = filtered.filter(song => 
+                song.year.toString().includes(searchYear)
+            );
+        }
+
+        // Apply sorting
+        filtered.sort((a, b) => {
+            let comparison = 0;
+            switch (sortBy) {
+                case 'title':
+                    comparison = a.title.localeCompare(b.title);
+                    break;
+                case 'artist':
+                    comparison = a.artist.localeCompare(b.artist);
+                    break;
+                case 'year':
+                    comparison = a.year - b.year;
+                    break;
+                case 'listens':
+                    comparison = (a.numListens || 0) - (b.numListens || 0);
+                    break;
+                case 'playlists':
+                    comparison = (a.numPlaylists || 0) - (b.numPlaylists || 0);
+                    break;
+                default:
+                    comparison = 0;
+            }
+            return sortOrder === 'asc' ? comparison : -comparison;
+        });
+
+        return filtered;
+    }
+
+    const filteredSongs = getFilteredSongs();
+
     return (
         <Box sx={{ padding: 3 }}>
             <Box sx={{ 
@@ -87,7 +169,7 @@ export default function SongScreen() {
                 mb: 3
             }}>
                 <Typography variant="h5" sx={{ color: 'white' }}>
-                    Song Catalog
+                    Song Catalog ({filteredSongs.length} songs)
                 </Typography>
                 {auth.loggedIn && (
                     <Button 
@@ -100,7 +182,69 @@ export default function SongScreen() {
                 )}
             </Box>
 
-            {store.songs.length === 0 ? (
+            {/* Search/Filter Box */}
+            <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, mb: 2 }}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            fullWidth
+                            label="Search Title"
+                            value={searchTitle}
+                            onChange={(e) => setSearchTitle(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            fullWidth
+                            label="Search Artist"
+                            value={searchArtist}
+                            onChange={(e) => setSearchArtist(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <TextField
+                            fullWidth
+                            label="Year"
+                            value={searchYear}
+                            onChange={(e) => setSearchYear(e.target.value)}
+                            size="small"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Sort By</InputLabel>
+                            <Select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                label="Sort By"
+                            >
+                                <MenuItem value="title">Title</MenuItem>
+                                <MenuItem value="artist">Artist</MenuItem>
+                                <MenuItem value="year">Year</MenuItem>
+                                <MenuItem value="listens">Listens</MenuItem>
+                                <MenuItem value="playlists">Playlists</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>Order</InputLabel>
+                            <Select
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                label="Order"
+                            >
+                                <MenuItem value="asc">Ascending</MenuItem>
+                                <MenuItem value="desc">Descending</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            {filteredSongs.length === 0 ? (
                 <Box sx={{
                     bgcolor: 'white',
                     borderRadius: 2,
@@ -108,17 +252,17 @@ export default function SongScreen() {
                     textAlign: 'center'
                 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
-                        No songs in the catalog yet
+                        No songs found
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        {auth.loggedIn 
-                            ? 'Click "Add Song" to add the first song!' 
-                            : 'Login to add songs to the catalog'}
+                        {store.songs.length === 0 
+                            ? (auth.loggedIn ? 'Click "Add Song" to add the first song!' : 'Login to add songs')
+                            : 'Try different search criteria'}
                     </Typography>
                 </Box>
             ) : (
                 <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                    {store.songs.map((song) => (
+                    {filteredSongs.map((song) => (
                         <ListItem
                             key={song._id}
                             sx={{
@@ -141,13 +285,23 @@ export default function SongScreen() {
                                         <AddIcon />
                                     </IconButton>
                                     {song.addedBy === auth.user?._id && (
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => handleDeleteSong(song._id)}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
+                                        <>
+                                            <IconButton
+                                                edge="end"
+                                                aria-label="edit"
+                                                sx={{ mr: 1 }}
+                                                onClick={() => handleOpenEdit(song)}
+                                            >
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton
+                                                edge="end"
+                                                aria-label="delete"
+                                                onClick={() => handleDeleteSong(song._id)}
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </>
                                     )}
                                 </>
                             )}
@@ -194,6 +348,46 @@ export default function SongScreen() {
                 <DialogActions>
                     <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
                     <Button onClick={handleCreateSong} variant="contained">Add Song</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Edit Song Dialog */}
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Edit Song</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Title"
+                        value={newSongTitle}
+                        onChange={(e) => setNewSongTitle(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Artist"
+                        value={newSongArtist}
+                        onChange={(e) => setNewSongArtist(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="Year"
+                        type="number"
+                        value={newSongYear}
+                        onChange={(e) => setNewSongYear(e.target.value)}
+                        margin="normal"
+                    />
+                    <TextField
+                        fullWidth
+                        label="YouTube Video ID"
+                        value={newSongYoutubeId}
+                        onChange={(e) => setNewSongYoutubeId(e.target.value)}
+                        margin="normal"
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleEditSong} variant="contained">Save Changes</Button>
                 </DialogActions>
             </Dialog>
 
