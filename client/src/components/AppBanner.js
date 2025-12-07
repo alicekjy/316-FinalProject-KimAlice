@@ -12,6 +12,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
+import Button from '@mui/material/Button';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 export default function AppBanner() {
     const { auth } = useContext(AuthContext);
@@ -38,6 +40,10 @@ export default function AppBanner() {
             store.closeCurrentPlaylist();
         }
         history.push('/home');
+    }
+
+    const handleSongs = () => {
+        history.push('/songs');
     }
 
     const menuId = 'primary-search-account-menu';
@@ -137,11 +143,21 @@ export default function AppBanner() {
                         variant="h4"
                         noWrap
                         component="div"
-                        sx={{ flexGrow: 1, cursor: 'pointer' }}
+                        sx={{ cursor: 'pointer' }}
                         onClick={handleHome}
                     >
-                        🎵 Playlister
+                        🎵 The Playlister
                     </Typography>
+
+                    <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>
+                        <Button
+                            color="inherit"
+                            onClick={handleSongs}
+                            startIcon={<MusicNoteIcon />}
+                        >
+                            Songs
+                        </Button>
+                    </Box>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton
