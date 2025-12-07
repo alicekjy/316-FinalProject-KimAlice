@@ -68,3 +68,48 @@ export const addSongToPlaylist = (playlistId, songId) => {
         body: JSON.stringify({playlistId, songId})
     });
 };
+//song requests
+export const createSong = (title, artist, year, youtubeId) => {
+    return fetchWithCredentials(`${BASE_URL}/song`,{
+        method: 'POST',
+        body: JSON.stringify({title, artist, year, youtubeId})
+    });
+};
+
+export const getSongs = () => {
+    return fetchWithCredentials(`${BASE_URL}/songs`, {
+        method: 'GET'
+    });
+};
+
+export const getSongById = (id) => {
+    return fetchWithCredentials(`${BASE_URL}/song/${id}`,{
+        method: 'GET'
+    });
+};
+
+export const updateSong = (id, title, artist, year, youtubeId) => {
+    return fetchWithCredentials(`${BASE_URL}/song/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({title, artist, year, youtubeId})
+    });
+};
+
+export const deleteSong = (id) =>{
+    return fetchWithCredentials(`${BASE_URL}/song/${id}`,{
+        method: 'DELETE'
+    });
+};
+
+export const searchSongs = (filters, sortBy, sortOrder) => {
+    const params = new URLSearchParams();
+    if(filters.title) params.append ('title', filters.title);
+    if(filters.artist) params.append('artist', filters.artist);
+    if(filters.year) params.append('year', filters.year);
+    if(sortBy) params.append('sortBy', sortBy);
+    if(sortOrder) params.append('sortOrder', sortOrder);
+
+    return fetchWithCredentials(`${BASE_URL}/songs/search?${params.toString()}`,{
+        method: 'GET'
+    });
+};
