@@ -11,7 +11,7 @@ const UserSchema = new Schema(
         email: {type: String, required: true, unique: true, trim: true, lowercase: true},
         username: {type: String, required: true, trim: true},
         passwordHash: {type: String, reqiored: true},
-        avatar: {type: String, required: true, default: ''}
+        avatar: {type: String, required: false, default: ''}
     },
     { timestamps: true }
 )
