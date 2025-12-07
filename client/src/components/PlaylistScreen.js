@@ -28,14 +28,15 @@ export default function PlaylistScreen() {
         if (id) {
             store.setCurrentPlaylist(id);
         }
-        // eslint-disable-next-line
+        // 
     }, [id]);
 
+    // Update display name whenever playlist changes
     useEffect(() => {
         if (store.currentPlaylist) {
             setPlaylistName(store.currentPlaylist.name);
         }
-    }, [store.currentPlaylist]);
+    }, [store.currentPlaylist, store.currentPlaylist?.name, store.currentPlaylist?.updatedAt]);
 
     if (!auth.loggedIn) {
         return (
@@ -61,6 +62,8 @@ export default function PlaylistScreen() {
         if (playlistName.trim() && playlistName !== store.currentPlaylist.name) {
             const songIds = store.currentPlaylist.songs.map(s => s._id);
             await store.updatePlaylist(store.currentPlaylist._id, playlistName, songIds);
+            // Force re-fetch to get updated data
+            await store.setCurrentPlaylist(id);
         }
         setIsEditingName(false);
     }
