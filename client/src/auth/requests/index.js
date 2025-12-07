@@ -51,3 +51,45 @@ async function fetchWithCredentials (url, options = {}){
         throw error;
     }
 }
+
+export const getLoggedIn = () => {
+    return fetchWithCredentials(`${BASE_URL}/loggedIn`, {
+        method: 'GET'
+    });
+};
+
+export const loginUser = (email, password) => {
+    return fetchWithCredentials(`${BASE_URL}/login`, {
+        method: 'POST',
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    })
+}
+export const logoutUser = () => {
+    return fetchWithCredentials(`${BASE_URL}/logout`, {
+        method: 'GET'
+    });
+}
+
+export const registerUser = (username, email, password, passwordVerify, avatar)=> {
+    return fetchWithCredentials(`${BASE_URL}/register`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username: username,
+            email: email,
+            password: password,
+            passwordVerify: passwordVerify,
+            avatar: avatar || ''
+        })
+    });
+};
+const apis = {
+    getLoggedIn,
+    registerUser,
+    loginUser,
+    logoutUser
+}
+
+export default apis
