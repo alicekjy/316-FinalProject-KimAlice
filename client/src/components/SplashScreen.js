@@ -37,14 +37,7 @@ export default function SplashScreen(){
                     color: 'white',
                     mb: 2
                 }}>
-                   🎵 Playlister
-                </Typography>
-                <Typography variant = "h5" sx = {{
-                    color: 'white',
-                    mb:4,
-                    maxWidth: '600px'
-                }}>
-                    Create and manage your YouTube music playlists
+                   🎵 The Playlister
                 </Typography>
                 <Box sx = {{
                     display: 'flex',
@@ -87,12 +80,6 @@ export default function SplashScreen(){
                                 Continue as Guest
                             </Button>
                 </Box>
-                <Typography variant = "body2" sx = {{
-                    color: 'rgba(255,255,255,0.7)',
-                    mt:4
-                }}>
-                    CSE 316 Final Project
-                </Typography>
             </Box>
         </div>
     )
