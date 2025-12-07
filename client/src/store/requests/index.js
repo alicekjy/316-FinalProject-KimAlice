@@ -113,3 +113,21 @@ export const searchSongs = (filters, sortBy, sortOrder) => {
         method: 'GET'
     });
 };
+
+const apis = {
+    createPlaylist,
+    deletePlaylistById,
+    getPlaylistById,
+    getPlaylists,
+    updatePlaylistById,
+    copyPlaylist,
+    playPlaylist,
+    addSongToPlaylist,
+    createSong,
+    getSongs,
+    getSongById,
+    updateSong,
+    deleteSong,
+    searchSongs
+}
+export default apis; 
