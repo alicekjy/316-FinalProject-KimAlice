@@ -5,6 +5,7 @@ import AppBanner from './AppBanner';
 import HomeScreen from './HomeScreen';
 import PlaylistScreen from './PlaylistScreen';
 import SongScreen from './SongScreen';
+import YouTubePlayer from './YouTubePlayer';
 
 export {
     SplashScreen,
@@ -13,5 +14,6 @@ export {
     AppBanner,
     HomeScreen,
     PlaylistScreen,
-    SongScreen
+    SongScreen,
+    YouTubePlayer
 }

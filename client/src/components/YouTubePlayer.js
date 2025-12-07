@@ -15,6 +15,7 @@ export default function YouTubePlayer({ playlist }) {
     const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
+        // Load YouTube IFrame API
         if (!window.YT) {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
@@ -35,7 +36,7 @@ export default function YouTubePlayer({ playlist }) {
                 player.destroy();
             }
         };
-
+        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
@@ -45,7 +46,7 @@ export default function YouTubePlayer({ playlist }) {
                 player.loadVideoById(song.youtubeId);
             }
         }
-        
+        // eslint-disable-next-line
     }, [currentSongIndex, playlist]);
 
     const initPlayer = () => {

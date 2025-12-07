@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import AuthContext from '../auth';
 import GlobalStoreContext from '../store';
+import YouTubePlayer from './YouTubePlayer';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -13,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import Grid from '@mui/material/Grid';
 
 export default function PlaylistScreen() {
     const { id } = useParams();
@@ -131,60 +133,68 @@ export default function PlaylistScreen() {
                 )}
             </Box>
 
-            <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                    Songs ({store.currentPlaylist.songs.length})
-                </Typography>
+            <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                    <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 3 }}>
+                        <Typography variant="h6" sx={{ mb: 2 }}>
+                            Songs ({store.currentPlaylist.songs.length})
+                        </Typography>
 
-                {store.currentPlaylist.songs.length === 0 ? (
-                    <Typography color="text.secondary">
-                        No songs in this playlist yet. Add songs from the Songs tab!
-                    </Typography>
-                ) : (
-                    <List>
-                        {store.currentPlaylist.songs.map((song, index) => (
-                            <ListItem
-                                key={index}
-                                sx={{
-                                    borderBottom: '1px solid #e0e0e0',
-                                    '&:last-child': { borderBottom: 'none' }
-                                }}
-                            >
-                                <Box sx={{ mr: 2, minWidth: 30 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {index + 1}
-                                    </Typography>
-                                </Box>
-                                
-                                <ListItemText
-                                    primary={song.title}
-                                    secondary={`${song.artist} • ${song.year}`}
-                                />
+                        {store.currentPlaylist.songs.length === 0 ? (
+                            <Typography color="text.secondary">
+                                No songs in this playlist yet. Add songs from the Songs tab!
+                            </Typography>
+                        ) : (
+                            <List>
+                                {store.currentPlaylist.songs.map((song, index) => (
+                                    <ListItem
+                                        key={index}
+                                        sx={{
+                                            borderBottom: '1px solid #e0e0e0',
+                                            '&:last-child': { borderBottom: 'none' }
+                                        }}
+                                    >
+                                        <Box sx={{ mr: 2, minWidth: 30 }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {index + 1}
+                                            </Typography>
+                                        </Box>
+                                        
+                                        <ListItemText
+                                            primary={song.title}
+                                            secondary={`${song.artist} • ${song.year}`}
+                                        />
 
-                                <IconButton
-                                    onClick={() => handleMoveSongUp(index)}
-                                    disabled={index === 0}
-                                >
-                                    <ArrowUpwardIcon />
-                                </IconButton>
-                                
-                                <IconButton
-                                    onClick={() => handleMoveSongDown(index)}
-                                    disabled={index === store.currentPlaylist.songs.length - 1}
-                                >
-                                    <ArrowDownwardIcon />
-                                </IconButton>
+                                        <IconButton
+                                            onClick={() => handleMoveSongUp(index)}
+                                            disabled={index === 0}
+                                        >
+                                            <ArrowUpwardIcon />
+                                        </IconButton>
+                                        
+                                        <IconButton
+                                            onClick={() => handleMoveSongDown(index)}
+                                            disabled={index === store.currentPlaylist.songs.length - 1}
+                                        >
+                                            <ArrowDownwardIcon />
+                                        </IconButton>
 
-                                <IconButton
-                                    onClick={() => handleRemoveSong(index)}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            </ListItem>
-                        ))}
-                    </List>
-                )}
-            </Box>
+                                        <IconButton
+                                            onClick={() => handleRemoveSong(index)}
+                                        >
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        )}
+                    </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                    <YouTubePlayer playlist={store.currentPlaylist} />
+                </Grid>
+            </Grid>
         </Box>
     );
 }
