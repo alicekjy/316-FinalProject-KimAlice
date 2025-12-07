@@ -37,6 +37,7 @@ export default function SongScreen() {
         if (auth.loggedIn) {
             store.loadPlaylists();
         }
+        
     }, [auth.loggedIn]);
 
     const handleCreateSong = () => {

@@ -22,6 +22,7 @@ export default function PlaylistScreen() {
     const { store } = useContext(GlobalStoreContext);
     const [playlistName, setPlaylistName] = useState('');
     const [isEditingName, setIsEditingName] = useState(false);
+    const [currentSongIndex, setCurrentSongIndex] = useState(0);
 
     useEffect(() => {
         if (id) {
@@ -56,35 +57,48 @@ export default function PlaylistScreen() {
         );
     }
 
-    const handleSaveName = () => {
+    const handleSaveName = async () => {
         if (playlistName.trim() && playlistName !== store.currentPlaylist.name) {
             const songIds = store.currentPlaylist.songs.map(s => s._id);
-            store.updatePlaylist(store.currentPlaylist._id, playlistName, songIds);
+            await store.updatePlaylist(store.currentPlaylist._id, playlistName, songIds);
         }
         setIsEditingName(false);
     }
 
-    const handleRemoveSong = (songIndex) => {
-        const newSongs = [...store.currentPlaylist.songs];
-        newSongs.splice(songIndex, 1);
-        const songIds = newSongs.map(s => s._id);
-        store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
+    const handleRemoveSong = async (songIndex) => {
+        if (window.confirm('Remove this song from the playlist?')) {
+            const newSongs = [...store.currentPlaylist.songs];
+            newSongs.splice(songIndex, 1);
+            const songIds = newSongs.map(s => s._id);
+            await store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
+            
+            // Adjust current song index if needed
+            if (currentSongIndex >= newSongs.length && newSongs.length > 0) {
+                setCurrentSongIndex(newSongs.length - 1);
+            } else if (newSongs.length === 0) {
+                setCurrentSongIndex(0);
+            }
+        }
     }
 
-    const handleMoveSongUp = (songIndex) => {
+    const handleMoveSongUp = async (songIndex) => {
         if (songIndex === 0) return;
         const newSongs = [...store.currentPlaylist.songs];
         [newSongs[songIndex - 1], newSongs[songIndex]] = [newSongs[songIndex], newSongs[songIndex - 1]];
         const songIds = newSongs.map(s => s._id);
-        store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
+        await store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
     }
 
-    const handleMoveSongDown = (songIndex) => {
+    const handleMoveSongDown = async (songIndex) => {
         if (songIndex === store.currentPlaylist.songs.length - 1) return;
         const newSongs = [...store.currentPlaylist.songs];
         [newSongs[songIndex], newSongs[songIndex + 1]] = [newSongs[songIndex + 1], newSongs[songIndex]];
         const songIds = newSongs.map(s => s._id);
-        store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
+        await store.updatePlaylist(store.currentPlaylist._id, store.currentPlaylist.name, songIds);
+    }
+
+    const handleSongClick = (index) => {
+        setCurrentSongIndex(index);
     }
 
     return (
@@ -151,8 +165,14 @@ export default function PlaylistScreen() {
                                         key={index}
                                         sx={{
                                             borderBottom: '1px solid #e0e0e0',
-                                            '&:last-child': { borderBottom: 'none' }
+                                            '&:last-child': { borderBottom: 'none' },
+                                            bgcolor: currentSongIndex === index ? '#e3f2fd' : 'transparent',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                bgcolor: currentSongIndex === index ? '#e3f2fd' : '#f5f5f5'
+                                            }
                                         }}
+                                        onClick={() => handleSongClick(index)}
                                     >
                                         <Box sx={{ mr: 2, minWidth: 30 }}>
                                             <Typography variant="body2" color="text.secondary">
@@ -166,21 +186,30 @@ export default function PlaylistScreen() {
                                         />
 
                                         <IconButton
-                                            onClick={() => handleMoveSongUp(index)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMoveSongUp(index);
+                                            }}
                                             disabled={index === 0}
                                         >
                                             <ArrowUpwardIcon />
                                         </IconButton>
                                         
                                         <IconButton
-                                            onClick={() => handleMoveSongDown(index)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleMoveSongDown(index);
+                                            }}
                                             disabled={index === store.currentPlaylist.songs.length - 1}
                                         >
                                             <ArrowDownwardIcon />
                                         </IconButton>
 
                                         <IconButton
-                                            onClick={() => handleRemoveSong(index)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveSong(index);
+                                            }}
                                         >
                                             <DeleteIcon />
                                         </IconButton>
@@ -192,7 +221,11 @@ export default function PlaylistScreen() {
                 </Grid>
 
                 <Grid item xs={12} md={6}>
-                    <YouTubePlayer playlist={store.currentPlaylist} />
+                    <YouTubePlayer 
+                        playlist={store.currentPlaylist} 
+                        currentSongIndex={currentSongIndex}
+                        onSongChange={setCurrentSongIndex}
+                    />
                 </Grid>
             </Grid>
         </Box>

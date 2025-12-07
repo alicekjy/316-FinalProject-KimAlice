@@ -1,5 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
-import GlobalStoreContext from '../store';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -8,11 +7,9 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 
-export default function YouTubePlayer({ playlist }) {
-    const { store } = useContext(GlobalStoreContext);
-    const [currentSongIndex, setCurrentSongIndex] = useState(0);
+export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange }) {
     const [player, setPlayer] = useState(null);
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [playerReady, setPlayerReady] = useState(false);
 
     useEffect(() => {
         // Load YouTube IFrame API
@@ -24,6 +21,7 @@ export default function YouTubePlayer({ playlist }) {
         }
 
         window.onYouTubeIframeAPIReady = () => {
+            console.log('YouTube API Ready');
             initPlayer();
         };
 
@@ -32,87 +30,119 @@ export default function YouTubePlayer({ playlist }) {
         }
 
         return () => {
-            if (player) {
-                player.destroy();
+            if (player && player.destroy) {
+                try {
+                    player.destroy();
+                } catch (e) {
+                    console.log('Player already destroyed');
+                }
             }
         };
         // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
-        if (player && playlist && playlist.songs.length > 0) {
+        if (playerReady && player && player.loadVideoById && playlist && playlist.songs && playlist.songs.length > 0) {
             const song = playlist.songs[currentSongIndex];
             if (song && song.youtubeId) {
                 player.loadVideoById(song.youtubeId);
             }
         }
         // eslint-disable-next-line
-    }, [currentSongIndex, playlist]);
+    }, [currentSongIndex, playerReady]);
 
     const initPlayer = () => {
-        if (!playlist || playlist.songs.length === 0) return;
+        if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
 
-        const song = playlist.songs[0];
+        const song = playlist.songs[currentSongIndex || 0];
         if (!song || !song.youtubeId) return;
 
-        const newPlayer = new window.YT.Player('youtube-player', {
-            height: '390',
-            width: '640',
-            videoId: song.youtubeId,
-            playerVars: {
-                autoplay: 0,
-                controls: 1,
-                modestbranding: 1,
-                rel: 0
-            },
-            events: {
-                onStateChange: onPlayerStateChange
-            }
-        });
-
-        setPlayer(newPlayer);
-    };
-
-    const onPlayerStateChange = (event) => {
-        // When video ends, play next
-        if (event.data === window.YT.PlayerState.ENDED) {
-            handleNext();
+        // Destroy existing player if any
+        const existingIframe = document.getElementById('youtube-player');
+        if (existingIframe && existingIframe.tagName === 'IFRAME') {
+            existingIframe.remove();
         }
-        // Update playing state
-        if (event.data === window.YT.PlayerState.PLAYING) {
-            setIsPlaying(true);
-        } else {
-            setIsPlaying(false);
+
+        // Create new div for player
+        const playerDiv = document.createElement('div');
+        playerDiv.id = 'youtube-player';
+        const container = document.getElementById('youtube-player-container');
+        if (container) {
+            container.appendChild(playerDiv);
+        }
+
+        try {
+            const newPlayer = new window.YT.Player('youtube-player', {
+                height: '390',
+                width: '100%',
+                videoId: song.youtubeId,
+                playerVars: {
+                    autoplay: 0,
+                    controls: 1,
+                    modestbranding: 1,
+                    rel: 0
+                },
+                events: {
+                    onReady: (event) => {
+                        console.log('Player ready!');
+                        setPlayer(event.target);
+                        setPlayerReady(true);
+                    },
+                    onStateChange: (event) => {
+                        console.log('Player state:', event.data);
+                        // Auto-play next when video ends
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            handleNext();
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error creating YouTube player:', error);
         }
     };
 
     const handlePlayPause = () => {
-        if (!player) return;
+        if (!player || !playerReady) {
+            console.log('Player not ready');
+            return;
+        }
 
-        if (isPlaying) {
-            player.pauseVideo();
-        } else {
-            player.playVideo();
+        try {
+            const state = player.getPlayerState();
+            console.log('Current state:', state);
+            
+            if (state === 1) { // Playing
+                player.pauseVideo();
+            } else { // Paused or other
+                player.playVideo();
+            }
+        } catch (error) {
+            console.error('Error toggling play/pause:', error);
         }
     };
 
     const handleNext = () => {
-        if (!playlist || playlist.songs.length === 0) return;
+        if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
 
         const nextIndex = (currentSongIndex + 1) % playlist.songs.length;
-        setCurrentSongIndex(nextIndex);
+        if (onSongChange) {
+            onSongChange(nextIndex);
+        }
     };
 
     const handlePrevious = () => {
-        if (!playlist || playlist.songs.length === 0) return;
+        if (!playlist || !playlist.songs || playlist.songs.length === 0) return;
 
         const prevIndex = currentSongIndex === 0 
             ? playlist.songs.length - 1 
             : currentSongIndex - 1;
-        setCurrentSongIndex(prevIndex);
+        if (onSongChange) {
+            onSongChange(prevIndex);
+        }
     };
 
-    if (!playlist || playlist.songs.length === 0) {
+    if (!playlist || !playlist.songs || playlist.songs.length === 0) {
         return (
             <Box sx={{ 
                 bgcolor: 'white', 
@@ -127,7 +157,7 @@ export default function YouTubePlayer({ playlist }) {
         );
     }
 
-    const currentSong = playlist.songs[currentSongIndex];
+    const currentSong = playlist.songs[currentSongIndex] || playlist.songs[0];
 
     return (
         <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 3 }}>
@@ -135,8 +165,8 @@ export default function YouTubePlayer({ playlist }) {
                 Now Playing
             </Typography>
 
-            <Box sx={{ mb: 2 }}>
-                <div id="youtube-player"></div>
+            <Box sx={{ mb: 2 }} id="youtube-player-container">
+                {/* YouTube player will be inserted here */}
             </Box>
 
             <Box sx={{ 
@@ -145,26 +175,42 @@ export default function YouTubePlayer({ playlist }) {
                 justifyContent: 'center',
                 mb: 2
             }}>
-                <IconButton onClick={handlePrevious} size="large">
+                <IconButton 
+                    onClick={handlePrevious} 
+                    size="large"
+                    disabled={!playerReady}
+                >
                     <SkipPreviousIcon fontSize="large" />
                 </IconButton>
 
-                <IconButton onClick={handlePlayPause} size="large">
-                    {isPlaying ? (
-                        <PauseIcon fontSize="large" />
-                    ) : (
-                        <PlayArrowIcon fontSize="large" />
-                    )}
+                <IconButton 
+                    onClick={handlePlayPause} 
+                    size="large"
+                    disabled={!playerReady}
+                    sx={{
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        '&:hover': {
+                            bgcolor: 'primary.dark'
+                        },
+                        mx: 2
+                    }}
+                >
+                    <PlayArrowIcon fontSize="large" />
                 </IconButton>
 
-                <IconButton onClick={handleNext} size="large">
+                <IconButton 
+                    onClick={handleNext} 
+                    size="large"
+                    disabled={!playerReady}
+                >
                     <SkipNextIcon fontSize="large" />
                 </IconButton>
             </Box>
 
             <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h6">
-                    {currentSong?.title}
+                    {currentSong?.title || 'Loading...'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                     {currentSong?.artist} • {currentSong?.year}
@@ -172,6 +218,11 @@ export default function YouTubePlayer({ playlist }) {
                 <Typography variant="caption" color="text.secondary">
                     Song {currentSongIndex + 1} of {playlist.songs.length}
                 </Typography>
+                {!playerReady && (
+                    <Typography variant="caption" display="block" sx={{ mt: 1 }} color="info.main">
+                        Loading player...
+                    </Typography>
+                )}
             </Box>
         </Box>
     );
