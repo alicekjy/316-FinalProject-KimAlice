@@ -35,6 +35,12 @@ export default function AppBanner() {
         auth.logoutUser();
     }
 
+
+    const handleEditAccount = () => {
+        handleMenuClose();
+        history.push('/edit-account');
+    }
+
     const handleHome = () => {
         if (store.currentPlaylist) {
             store.closeCurrentPlaylist();
@@ -93,6 +99,7 @@ export default function AppBanner() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
+            <MenuItem onClick={handleEditAccount}>Edit Account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>        
 
@@ -146,7 +153,7 @@ export default function AppBanner() {
                         sx={{ cursor: 'pointer' }}
                         onClick={handleHome}
                     >
-                        🎵 The Playlister
+                        🎵The Playlister
                     </Typography>
 
                     <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>

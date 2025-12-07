@@ -399,10 +399,16 @@ addSongToPlaylist = async (req,res) =>{
             });
         }
         //add song to playlist if not already there
-        const songIds = playlist.songs.map(s=> s._id.toString());
-        if(!songIds.includes(songId)){
+        const songIds = playlist.songs.map(s => {
+            return (typeof s === 'object' && s._id) ? s._id.toString() : s.toString();
+        });
+
+        if (!songIds.includes(songId.toString())) {
             songIds.push(songId);
-            await db.updatePlaylist(playlistId, {songs: songIds});
+            await db.updatePlaylist(playlistId, { 
+                name: playlist.name, 
+                songs: songIds 
+            });
             //update song's playlist count
             await db.updateSongPlaylistCount(songId);
         }

@@ -48,7 +48,7 @@ export default function SongsScreen() {
         if (auth.loggedIn) {
             store.loadPlaylists();
         }
-        
+
     }, [auth.loggedIn]);
 
     const handleCreateSong = async () => {
@@ -342,7 +342,6 @@ export default function SongsScreen() {
                         value={newSongYoutubeId}
                         onChange={(e) => setNewSongYoutubeId(e.target.value)}
                         margin="normal"
-                        helperText="Example: dQw4w9WgXcQ (from youtube.com/watch?v=dQw4w9WgXcQ)"
                     />
                 </DialogContent>
                 <DialogActions>

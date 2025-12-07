@@ -9,8 +9,8 @@ export default function SplashScreen(){
     const history = useHistory ();
 
     const handleGuestContinue = () =>{
-        //guest mode - go home without login
-        history.push('/');
+        // Guest mode goes straight to playlist browsing
+        history.push('/home');
     }
 
     const handleLogin = () => {
