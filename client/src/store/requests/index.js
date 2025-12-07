@@ -37,10 +37,30 @@ export const getPlaylistById = (id) => {
     });
 };
 
-export const getPlaylists = () => {
-    return fetchWithCredentials(`${BASE_URL}/playlists`, {
-        method: 'GET'
+export const getPlaylists = (filters = {}) => {
+    const params = new URLSearchParams();
+    const filterEntries = {
+        playlistName: filters.playlistName,
+        ownerUsername: filters.ownerUsername,
+        songTitle: filters.songTitle,
+        songArtist: filters.songArtist,
+        songYear: filters.songYear,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder
+    };
+
+    Object.entries(filterEntries).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            params.append(key, value);
+        }
     });
+
+    const queryString = params.toString();
+    const url = queryString 
+        ? `${BASE_URL}/playlists?${queryString}` 
+        : `${BASE_URL}/playlists`;
+
+    return fetchWithCredentials(url, { method: 'GET' });
 };
 
 export const updatePlaylistById = (id, name, songs) => {

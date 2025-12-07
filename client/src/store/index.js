@@ -57,9 +57,9 @@ function GlobalStoreContextProvider(props) {
     }
 
     //playlist functions
-    store.loadPlaylists = async function () {
+    store.loadPlaylists = async function (filters = {}) {
         try {
-            const response = await api.getPlaylists();
+            const response = await api.getPlaylists(filters);
             if (response.status === 200) {
                 storeReducer({
                     type: GlobalStoreActionType.LOAD_PLAYLISTS,
