@@ -184,6 +184,36 @@ registerUser = async (req, res) => {
     }
 }
 
+updateAccount = async (req, res) => {
+    try{
+        const userId = auth.verifyUser(req);
+        if(!userId){
+            return res.status(401).json({
+                errorMessage: 'Unauthorized'
+            });
+        }
+        const {username, avatar} = req.body;
+        const db = req.app.locals.db;
+
+        const updatedUser = await db.updateUser(userId, {username, avatar});
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                _id: updatedUser._id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar
+            }
+        });
+    }catch(error){
+        console.error('Update account error: ', error);
+        return res.status(500).json({
+            errorMessage: 'Error updating account'
+        })
+    }
+}
+ 
 module.exports = {
     getLoggedIn,
     registerUser,
