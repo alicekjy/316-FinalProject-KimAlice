@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
 import AuthContext from '../auth';
 import GlobalStoreContext from '../store';
 
@@ -19,8 +19,10 @@ export default function AppBanner() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
     const history = useHistory();
+    const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
+    const isSplash = location.pathname === '/';
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -46,10 +48,6 @@ export default function AppBanner() {
             store.closeCurrentPlaylist();
         }
         history.push('/home');
-    }
-
-    const handleSongs = () => {
-        history.push('/songs');
     }
 
     const menuId = 'primary-search-account-menu';
@@ -131,9 +129,13 @@ export default function AppBanner() {
         }
     }
 
+    if (isSplash) {
+        return null;
+    }
+
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
+            <AppBar position="fixed" sx={{ bgcolor: isSplash ? '#e600b6' : undefined }}>
                 <Toolbar>
                     <IconButton
                         size="large"
@@ -145,25 +147,28 @@ export default function AppBanner() {
                     >
                         <HomeIcon />
                     </IconButton>
-                    
-                    <Typography                        
-                        variant="h4"
-                        noWrap
-                        component="div"
-                        sx={{ cursor: 'pointer' }}
-                        onClick={handleHome}
-                    >
-                        🎵The Playlister
-                    </Typography>
-
-                    <Box sx={{ flexGrow: 1, display: 'flex', ml: 4 }}>
-                        <Button
-                            color="inherit"
-                            onClick={handleSongs}
-                            startIcon={<MusicNoteIcon />}
+                    {!isSplash && (
+                        <Typography                        
+                            variant="h4"
+                            noWrap
+                            component="div"
+                            sx={{ cursor: 'pointer' }}
+                            onClick={handleHome}
                         >
-                            Songs
-                        </Button>
+                            🎵The Playlister
+                        </Typography>
+                    )}
+
+                    <Box sx={{ flexGrow: 1, display: 'flex', ml: isSplash ? 0 : 4 }}>
+                        {!isSplash && (
+                            <Button
+                                color="inherit"
+                                onClick={() => history.push('/songs')}
+                                startIcon={<MusicNoteIcon />}
+                            >
+                                Songs
+                            </Button>
+                        )}
                     </Box>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -181,6 +186,7 @@ export default function AppBanner() {
                     </Box>
                 </Toolbar>
             </AppBar>
+            <Toolbar />
             {menu}
         </Box>
     );

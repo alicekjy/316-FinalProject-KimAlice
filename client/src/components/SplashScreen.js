@@ -1,15 +1,15 @@
-import {useContext} from 'react';
-import AuthContext from '../auth';
-import {useHistory} from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import IconButton from '@mui/material/IconButton';
 
-export default function SplashScreen(){
-    const history = useHistory ();
+export default function SplashScreen() {
+    const history = useHistory();
 
-    const handleGuestContinue = () =>{
-        // Guest mode goes straight to playlist browsing
+    const handleGuestContinue = () => {
         history.push('/home');
     }
 
@@ -17,69 +17,158 @@ export default function SplashScreen(){
         history.push('/login');
     }
 
-    const handleRegister = () =>{
+    const handleRegister = () => {
         history.push('/register');
     }
-    return(
-        <div id = "splash-screen">
-            <Box sx = {{
+
+    return (
+        <Box 
+            sx={{
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: '80vh',
-                textAlign: 'center'
-            }}>
-                <Typography variant = "h1" sx = {{
-                    fontSize: '4rem',
-                    fontWeight: 'bold',
-                    color: 'white',
-                    mb: 2
-                }}>
-                   🎵 The Playlister
-                </Typography>
-                <Box sx = {{
+                minHeight: '100vh',
+                bgcolor: '#d7e9ff',
+                padding: 3
+            }}
+        >
+            {/* Main Container Box */}
+            <Box
+                sx={{
+                    bgcolor: '#f8fbff',
+                    border: '2px solid #333',
+                    borderRadius: 1,
+                    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                    width: '100%',
+                    maxWidth: '1200px',
+                    minHeight: '700px',
+                    overflow: 'hidden',
                     display: 'flex',
-                    gap: 2,
-                    flexDirection: 'column',
-                    width: '300px'
-                }}>
-                    <Button 
-                        variant = "contained"
-                        size= "large"
-                        onClick = {handleLogin}
-                        sx = {{
-                            bgcolor: "#1976d2",
-                            '&:hover': {bgcolor: '#1565c0'}
-                        }}>
+                    flexDirection: 'column'
+                }}
+            >
+                {/* Banner - Inside the box */}
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        bgcolor: '#205697',
+                        color: 'white',
+                        px: 2,
+                        py: 1.5,
+                        borderBottom: '2px solid #333'
+                    }}
+                >
+                    <IconButton 
+                        onClick={() => history.push('/')}
+                        sx={{ 
+                            color: 'white',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#f0f0f0' }
+                        }}
+                        aria-label="Home"
+                    >
+                        <HomeIcon sx={{ color: '#205697' }} />
+                    </IconButton>
+                    
+                    <IconButton 
+                        onClick={handleLogin}
+                        sx={{ 
+                            color: 'white',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#f0f0f0' }
+                        }}
+                        aria-label="Account"
+                    >
+                        <AccountCircleIcon sx={{ color: '#205697' }} />
+                    </IconButton>
+                </Box>
+
+                {/* Content Area - Title and Icon */}
+                <Box 
+                    sx={{ 
+                        padding: { xs: 4, sm: 8 }, 
+                        textAlign: 'center',
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <Typography variant="h3" sx={{ mb: 6, color: '#2f3b45', fontWeight: '600' }}>
+                        The Playlister
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Typography 
+                            variant="h1" 
+                            component="div" 
+                            sx={{ fontSize: '10rem', color: '#333', lineHeight: 1 }}
+                        >
+                            🎵
+                        </Typography>
+                    </Box>
+                </Box>
+
+                {/* Buttons Area - At Bottom */}
+                <Box 
+                    sx={{ 
+                        padding: { xs: 3, sm: 4 }, 
+                        paddingBottom: { xs: 4, sm: 6 },
+                        textAlign: 'center'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                        <Button 
+                            variant="contained"
+                            size="large"
+                            onClick={handleGuestContinue}
+                            sx={{ 
+                                bgcolor: '#205697', 
+                                '&:hover': { bgcolor: '#1565c0' },
+                                px: 4,
+                                py: 1.5,
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Continue as Guest
+                        </Button>
+                        <Button 
+                            variant="contained"
+                            size="large"
+                            onClick={handleLogin}
+                            sx={{ 
+                                bgcolor: '#205697', 
+                                '&:hover': { bgcolor: '#1565c0' },
+                                px: 4,
+                                py: 1.5,
+                                fontSize: '1rem'
+                            }}
+                        >
                             Login
                         </Button>
-                    <Button
-                        variant = "contained"
-                        size = "large"
-                        onClick = {handleRegister}
-                        sx = {{
-                            bgcolor: '#2e7d32',
-                            '&:hover': {bgcolor: '#1b5e20'}
-                        }}>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={handleRegister}
+                            sx={{ 
+                                bgcolor: '#205697', 
+                                '&:hover': { bgcolor: '#1565c0' },
+                                px: 4,
+                                py: 1.5,
+                                fontSize: '1rem'
+                            }}
+                        >
                             Create Account
                         </Button>
-                        <Button
-                            variant = "outlined"
-                            size = "large"
-                            onClick = {handleGuestContinue}
-                            sx = {{
-                                color: 'white',
-                                borderColor: 'white',
-                                '&:hover':{
-                                    borderColor: 'white',
-                                    bgcolor: 'rgba(255,255,255,0.1)'
-                                }
-                            }}>
-                                Continue as Guest
-                            </Button>
+                    </Box>
                 </Box>
             </Box>
-        </div>
-    )
+        </Box>
+    );
 }
