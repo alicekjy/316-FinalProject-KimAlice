@@ -6,5 +6,6 @@ router.post('/register', AuthController.registerUser)
 router.post('/login', AuthController.loginUser)
 router.get('/logout', AuthController.logoutUser)
 router.get('/loggedIn', AuthController.getLoggedIn)
+router.put('/update', auth.verify, AuthController.updateAccount)
 
 module.exports = router
