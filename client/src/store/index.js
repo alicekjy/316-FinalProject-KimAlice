@@ -171,8 +171,9 @@ function GlobalStoreContextProvider(props) {
     }
     store.updateSong = async function (id, title, artist, year, youtubeId) {
         try {
-            const response = await api.updateSong(id, title, artist, year, youtubeId);
-            if (response.ok || response.status === 200) {
+            const parsedYear = typeof year === 'number' ? year : parseInt(year);
+            const response = await api.updateSong(id, title, artist, parsedYear, youtubeId);
+            if (response.ok) {
                 await store.loadSongs();
                 return true;
             }

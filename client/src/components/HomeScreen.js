@@ -568,9 +568,8 @@ export default function HomeScreen() {
                                         <MenuItem value="name-desc">Playlist Name (Z-A)</MenuItem>
                                         <MenuItem value="owner-asc">User Name (A-Z)</MenuItem>
                                         <MenuItem value="owner-desc">User Name (Z-A)</MenuItem>
-
-                                </Select>
-                            </FormControl>
+                                    </Select>
+                                </FormControl>
                             
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>

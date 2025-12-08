@@ -86,13 +86,16 @@ export default function SongScreen() {
         setSelectedSong(song);
         setSongTitle(song.title);
         setSongArtist(song.artist);
-        setSongYear(song.year.toString());
+        setSongYear(song.year?.toString() || '');
         setSongYoutubeId(song.youtubeId);
         setEditDialogOpen(true);
     };
 
     const handleEdit = async () => {
         if (!selectedSong) return;
+        if (!songTitle || !songArtist || !songYear || !songYoutubeId) {
+            return;
+        }
         const ok = await store.updateSong(selectedSong._id, songTitle, songArtist, songYear, songYoutubeId);
         if (ok) {
             setSelectedSong({
@@ -216,7 +219,7 @@ export default function SongScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
@@ -371,7 +374,7 @@ export default function SongScreen() {
                                     </Typography>
                                 </Box>
                             ) : (
-                                <List sx={{ bgcolor: '#fff7d6', borderRadius: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.12)', border: '1px solid #d2c084', p: 1 }}>
+                                <List sx={{ bgcolor: '#acc8f8', borderRadius: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.12)', border: '1px solid #acc8f8', p: 1 }}>
                                     {filteredSongs.map((song, index) => {
                                         const isOwner = auth.loggedIn && auth.user && song.addedBy === auth.user._id;
                                         
@@ -383,9 +386,9 @@ export default function SongScreen() {
                                                     borderBottom: '1px solid #e0e0e0',
                                                     '&:last-child': { borderBottom: 'none' },
                                                     cursor: 'pointer',
-                                                    '&:hover': { bgcolor: '#f5edc6' },
-                                                    bgcolor: '#f7c66f',
-                                                    border: '1px solid #e0a63b',
+                                                    '&:hover': { bgcolor: '#e0ecff' },
+                                                    bgcolor: '#f2f7ff',
+                                                    border: '1px solid #e0ecff',
                                                     mb: 1,
                                                     borderRadius: 1,
                                                     pr: 6

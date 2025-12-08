@@ -1,5 +1,5 @@
 #root {
-    background: radial-gradient(circle at top left, #d7e9ff 0%, #e6f0ff 35%, #f2f7ff 70%, #e0ecff 100%);
+    background: radial-gradient(circle at top left, #d7e9ff 0%, #e6f0ff 35%, #f2f7ff 70%, #e0ecff 100%  );
     min-height: 100vh;
 }
   
