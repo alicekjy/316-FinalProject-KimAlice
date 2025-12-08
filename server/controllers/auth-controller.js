@@ -70,7 +70,7 @@ loginUser = async (req, res) => {
                 })
         }
 
-        // LOGIN THE USER
+        //login the user
         const token = auth.signToken(existingUser._id);
         console.log(token);
 
@@ -153,13 +153,12 @@ registerUser = async (req, res) => {
             username,
             email,
             passwordHash,
-            // provided avatar or empty sting
             avatar: avatar || ''
         });
 
         console.log("new user saved: " + savedUser._id);
 
-        // LOGIN THE USER
+        //login the user
         const token = auth.signToken(savedUser._id);
         console.log("token:" + token);
 

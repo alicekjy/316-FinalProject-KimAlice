@@ -21,7 +21,7 @@ createPlaylist = async (req, res) => {
                 errorMessage: 'User not found'
             });
         }
-        //Generate unique Untitled n name
+        // generate unique Untitled n name
         const userPlaylists = await db.findPlaylistsByOwner(userId);
         let untitledNumber = 0;
         let playlistName = `Untitled ${untitledNumber}`;
