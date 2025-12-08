@@ -12,18 +12,23 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Grid from '@mui/material/Grid';
+import Avatar from '@mui/material/Avatar';
+import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
-    const [searchText, setSearchText] = useState('');
-    const [sortBy, setSortBy] = useState('name');
-    const [sortOrder, setSortOrder] = useState('asc');
+    const [filters, setFilters] = useState({
+        playlistName: '',
+        ownerUsername: '',
+        songTitle: '',
+        songArtist: '',
+        songYear: ''
+    });
+    const [sortBy, setSortBy] = useState('listens');
+    const [sortOrder, setSortOrder] = useState('desc');
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -32,13 +37,19 @@ export default function HomeScreen() {
             setLoading(true);
             try {
                 const api = require('../store/requests').default;
-                const response = await api.getPlaylists();
+                const response = await api.getPlaylists({
+                    ...filters,
+                    sortBy,
+                    sortOrder
+                });
                 if (response.ok) {
                     if (auth.loggedIn) {
-                        // For logged-in users, also load through store
-                        await store.loadPlaylists();
+                        await store.loadPlaylists({
+                            ...filters,
+                            sortBy,
+                            sortOrder
+                        });
                     } else {
-                        // For guests, use the fetched playlists
                         setAllPlaylists(response.data.playlists || []);
                     }
                 }
@@ -49,7 +60,7 @@ export default function HomeScreen() {
         };
         loadData();
         // eslint-disable-next-line
-    }, [auth.loggedIn]);
+    }, [auth.loggedIn, sortBy, sortOrder]);
 
     const handleCreatePlaylist = () => {
         store.createPlaylist();
@@ -92,6 +103,77 @@ export default function HomeScreen() {
         }
     }
 
+    const handleFilterChange = (field, value) => {
+        setFilters(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSearch = async () => {
+        setLoading(true);
+        try {
+            const api = require('../store/requests').default;
+            const response = await api.getPlaylists({
+                ...filters,
+                sortBy,
+                sortOrder
+            });
+            if (response.ok) {
+                if (auth.loggedIn) {
+                    await store.loadPlaylists({
+                        ...filters,
+                        sortBy,
+                        sortOrder
+                    });
+                } else {
+                    setAllPlaylists(response.data.playlists || []);
+                }
+            }
+        } catch (error) {
+            console.error('Error searching playlists:', error);
+        }
+        setLoading(false);
+    };
+
+    const handleClear = async () => {
+        const cleared = {
+            playlistName: '',
+            ownerUsername: '',
+            songTitle: '',
+            songArtist: '',
+            songYear: ''
+        };
+        setFilters(cleared);
+        setSortBy('listens');
+        setSortOrder('desc');
+        setLoading(true);
+        try {
+            const api = require('../store/requests').default;
+            const response = await api.getPlaylists({
+                ...cleared,
+                sortBy: 'listens',
+                sortOrder: 'desc'
+            });
+            if (response.ok) {
+                if (auth.loggedIn) {
+                    await store.loadPlaylists({
+                        ...cleared,
+                        sortBy: 'listens',
+                        sortOrder: 'desc'
+                    });
+                } else {
+                    setAllPlaylists(response.data.playlists || []);
+                }
+            }
+        } catch (error) {
+            console.error('Error clearing filters:', error);
+        }
+        setLoading(false);
+    };
+
+    const toggleSortOrder = async () => {
+        const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        setSortOrder(nextOrder);
+    };
+
     // Filter and sort playlists
     const getFilteredPlaylists = () => {
         // Get the right playlist source
@@ -99,13 +181,32 @@ export default function HomeScreen() {
         let filtered = [...source];
         
         // Apply search filter
-        if (searchText) {
-            filtered = filtered.filter(playlist => {
-                const matchName = playlist.name.toLowerCase().includes(searchText.toLowerCase());
-                const matchOwner = playlist.owner?.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-                                 playlist.ownerEmail?.toLowerCase().includes(searchText.toLowerCase());
-                return matchName || matchOwner;
-            });
+        if (filters.playlistName) {
+            filtered = filtered.filter(playlist => 
+                playlist.name.toLowerCase().includes(filters.playlistName.toLowerCase())
+            );
+        }
+        if (filters.ownerUsername) {
+            filtered = filtered.filter(playlist =>
+                (playlist.owner?.username || playlist.ownerEmail || '')
+                    .toLowerCase()
+                    .includes(filters.ownerUsername.toLowerCase())
+            );
+        }
+        if (filters.songTitle) {
+            filtered = filtered.filter(playlist =>
+                playlist.songs.some(song => song.title.toLowerCase().includes(filters.songTitle.toLowerCase()))
+            );
+        }
+        if (filters.songArtist) {
+            filtered = filtered.filter(playlist =>
+                playlist.songs.some(song => song.artist.toLowerCase().includes(filters.songArtist.toLowerCase()))
+            );
+        }
+        if (filters.songYear) {
+            filtered = filtered.filter(playlist =>
+                playlist.songs.some(song => song.year?.toString().includes(filters.songYear))
+            );
         }
 
         // Apply sorting
@@ -137,182 +238,232 @@ export default function HomeScreen() {
 
     const filteredPlaylists = getFilteredPlaylists();
 
-    // LOADING STATE
-    if (loading) {
-        return (
-            <Box sx={{ padding: 3 }}>
-                <Typography variant="h5" sx={{ color: 'white' }}>
-                    Loading playlists...
-                </Typography>
-            </Box>
-        );
-    }
+    const renderLoading = (
+        <Box sx={{ padding: 6, display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress />
+        </Box>
+    );
+
+    const renderList = (
+        <List sx={{ bgcolor: 'transparent', p: 0 }}>
+            {filteredPlaylists.map((playlist) => {
+                const isOwner = auth.loggedIn && auth.user && playlist.owner?._id === auth.user._id;
+                const listenerCount = playlist.playedBy?.length || 0;
+                const ownerName = playlist.owner?.username || playlist.ownerEmail || 'Unknown';
+
+                return (
+                    <ListItem
+                        key={playlist._id}
+                        sx={{
+                            bgcolor: 'white',
+                            borderRadius: 2,
+                            mb: 2,
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+                            alignItems: 'flex-start'
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Avatar sx={{ bgcolor: '#f5f5f5', color: '#222' }}>
+                                    {ownerName.substring(0, 2).toUpperCase()}
+                                </Avatar>
+                                <Box sx={{ flexGrow: 1 }}>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                        {playlist.name}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {ownerName}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#1e88e5', mt: 0.5 }}>
+                                        {listenerCount} Listener{listenerCount === 1 ? '' : 's'}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    {isOwner && (
+                                        <>
+                                            <Button 
+                                                variant="contained" 
+                                                color="error" 
+                                                size="small"
+                                                onClick={(e) => handleDeletePlaylist(playlist._id, e)}
+                                            >
+                                                Delete
+                                            </Button>
+                                            <Button 
+                                                variant="contained" 
+                                                color="primary" 
+                                                size="small"
+                                                onClick={(e) => handlePlaylistClick(playlist._id, e)}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button 
+                                                variant="contained" 
+                                                color="success" 
+                                                size="small"
+                                                onClick={(e) => handleCopyPlaylist(playlist._id, e)}
+                                            >
+                                                Copy
+                                            </Button>
+                                        </>
+                                    )}
+                                    <Button 
+                                        variant="contained" 
+                                        sx={{ bgcolor: '#e600b6', '&:hover': { bgcolor: '#c20099' } }}
+                                        size="small"
+                                        onClick={(e) => handlePlayPlaylist(playlist._id, e)}
+                                    >
+                                        Play
+                                    </Button>
+                                    <IconButton>
+                                        <ArrowDropDownIcon />
+                                    </IconButton>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </ListItem>
+                );
+            })}
+        </List>
+    );
 
     // PLAYLISTS VIEW (works for both guest and logged-in)
     return (
-        <Box sx={{ padding: 3 }}>
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                mb: 3
-            }}>
-                <Typography variant="h5" sx={{ color: 'white' }}>
-                    {auth.loggedIn 
-                        ? `My Playlists (${filteredPlaylists.length})`
-                        : `All Playlists (${filteredPlaylists.length})`
-                    }
-                </Typography>
-                {auth.loggedIn ? (
-                    <Button 
-                        variant="contained" 
-                        color="primary"
-                        onClick={handleCreatePlaylist}
-                    >
-                        + New Playlist
-                    </Button>
-                ) : (
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button variant="contained" size="small" href="/login">
-                            Login
-                        </Button>
-                        <Button variant="contained" color="secondary" size="small" href="/register">
-                            Sign Up
-                        </Button>
-                    </Box>
-                )}
-            </Box>
-
-            {/* Search and Sort Box */}
-            <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, mb: 2 }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
+        <Box sx={{ padding: 3, minHeight: '100vh', bgcolor: '#f8dafb' }}>
+            <Box
+                sx={{
+                    bgcolor: '#fff9e6',
+                    border: '2px solid #333',
+                    borderRadius: 1,
+                    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                    width: '100%',
+                    maxWidth: '1300px',
+                    margin: '0 auto',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    gap: 4,
+                    padding: 3,
+                    mt: 2
+                }}
+            >
+                {/* Left column filters */}
+                <Box sx={{ flex: 1, maxWidth: 360 }}>
+                    <Typography variant="h4" sx={{ color: '#c000c7', fontWeight: 800, mb: 3 }}>
+                        Playlists
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <TextField
                             fullWidth
-                            label="Search Playlists"
-                            placeholder="Search by name or owner..."
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
+                            placeholder="by Playlist Name"
+                            value={filters.playlistName}
+                            onChange={(e) => handleFilterChange('playlistName', e.target.value)}
                             size="small"
+                            sx={{ bgcolor: '#e6e0ef' }}
                         />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Sort By</InputLabel>
-                            <Select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                label="Sort By"
+                        <TextField
+                            fullWidth
+                            placeholder="by User Name"
+                            value={filters.ownerUsername}
+                            onChange={(e) => handleFilterChange('ownerUsername', e.target.value)}
+                            size="small"
+                            sx={{ bgcolor: '#e6e0ef' }}
+                        />
+                        <TextField
+                            fullWidth
+                            placeholder="by Song Title"
+                            value={filters.songTitle}
+                            onChange={(e) => handleFilterChange('songTitle', e.target.value)}
+                            size="small"
+                            sx={{ bgcolor: '#e6e0ef' }}
+                        />
+                        <TextField
+                            fullWidth
+                            placeholder="by Song Artist"
+                            value={filters.songArtist}
+                            onChange={(e) => handleFilterChange('songArtist', e.target.value)}
+                            size="small"
+                            sx={{ bgcolor: '#e6e0ef' }}
+                        />
+                        <TextField
+                            fullWidth
+                            placeholder="by Song Year"
+                            value={filters.songYear}
+                            onChange={(e) => handleFilterChange('songYear', e.target.value)}
+                            size="small"
+                            sx={{ bgcolor: '#e6e0ef' }}
+                        />
+                        <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
+                            <Button 
+                                variant="contained" 
+                                startIcon={<PlayArrowIcon />}
+                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' }, flex: 1 }}
+                                onClick={handleSearch}
                             >
-                                <MenuItem value="name">Name</MenuItem>
-                                <MenuItem value="songs">Song Count</MenuItem>
-                                <MenuItem value="listens">Listens</MenuItem>
-                                <MenuItem value="owner">Owner</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Order</InputLabel>
-                            <Select
-                                value={sortOrder}
-                                onChange={(e) => setSortOrder(e.target.value)}
-                                label="Order"
+                                Search
+                            </Button>
+                            <Button 
+                                variant="contained" 
+                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' }, flex: 1 }}
+                                onClick={handleClear}
                             >
-                                <MenuItem value="asc">Ascending</MenuItem>
-                                <MenuItem value="desc">Descending</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                </Grid>
-            </Box>
-
-            {/* Playlists List */}
-            {filteredPlaylists.length === 0 ? (
-                <Box sx={{
-                    bgcolor: 'white',
-                    borderRadius: 2,
-                    padding: 4,
-                    textAlign: 'center'
-                }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                        {auth.loggedIn && store.playlists.length === 0
-                            ? "You don't have any playlists yet"
-                            : !auth.loggedIn && allPlaylists.length === 0
-                            ? "No playlists available yet"
-                            : "No playlists found"}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {auth.loggedIn && store.playlists.length === 0
-                            ? 'Click "New Playlist" to create your first playlist!'
-                            : searchText
-                            ? 'Try different search criteria'
-                            : 'Check back later for new playlists'}
-                    </Typography>
+                                Clear
+                            </Button>
+                        </Box>
+                    </Box>
                 </Box>
-            ) : (
-                <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                    {filteredPlaylists.map((playlist) => {
-                        const isOwner = auth.loggedIn && auth.user && playlist.owner?._id === auth.user._id;
-                        
-                        return (
-                            <ListItem
-                                key={playlist._id}
-                                sx={{
-                                    borderBottom: '1px solid #e0e0e0',
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                        bgcolor: '#f5f5f5'
-                                    },
-                                    '&:last-child': { borderBottom: 'none' }
-                                }}
-                                onClick={() => handlePlaylistClick(playlist._id)}
+
+                <Divider orientation="vertical" flexItem sx={{ borderColor: '#d6cfcf' }} />
+
+                {/* Right column list */}
+                <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body1">Sort:</Typography>
+                            <Button 
+                                variant="text" 
+                                onClick={toggleSortOrder}
+                                sx={{ color: '#1e88e5', textTransform: 'none', fontWeight: 700 }}
                             >
-                                <ListItemText
-                                    primary={playlist.name}
-                                    secondary={
-                                        <>
-                                            By: {playlist.owner?.username || playlist.ownerEmail || 'Unknown'}
-                                            {' • '}
-                                            {playlist.songs.length} song{playlist.songs.length !== 1 ? 's' : ''}
-                                            {playlist.playedBy && playlist.playedBy.length > 0 && 
-                                                ` • ${playlist.playedBy.length} listener${playlist.playedBy.length !== 1 ? 's' : ''}`
-                                            }
-                                        </>
-                                    }
-                                />
-                                <IconButton
-                                    edge="end"
-                                    aria-label="play"
-                                    sx={{ mr: 1 }}
-                                    onClick={(e) => handlePlayPlaylist(playlist._id, e)}
-                                >
-                                    <PlayArrowIcon />
-                                </IconButton>
-                                {isOwner && (
-                                    <>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="copy"
-                                            sx={{ mr: 1 }}
-                                            onClick={(e) => handleCopyPlaylist(playlist._id, e)}
-                                        >
-                                            <ContentCopyIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={(e) => handleDeletePlaylist(playlist._id, e)}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </>
-                                )}
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            )}
+                                Listeners ({sortOrder === 'desc' ? 'Hi-Lo' : 'Lo-Hi'})
+                            </Button>
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {filteredPlaylists.length} Playlist{filteredPlaylists.length === 1 ? '' : 's'}
+                        </Typography>
+                    </Box>
+
+                    {auth.loggedIn && (
+                        <Box sx={{ textAlign: 'right' }}>
+                            <Button 
+                                variant="contained" 
+                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' } }}
+                                onClick={handleCreatePlaylist}
+                            >
+                                + New Playlist
+                            </Button>
+                        </Box>
+                    )}
+
+                    {loading ? renderLoading : (
+                        filteredPlaylists.length === 0 ? (
+                            <Box sx={{
+                                bgcolor: 'white',
+                                borderRadius: 2,
+                                padding: 4,
+                                textAlign: 'center',
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.15)'
+                            }}>
+                                <Typography variant="h6" sx={{ mb: 2 }}>
+                                    No playlists found
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Try adjusting your search filters.
+                                </Typography>
+                            </Box>
+                        ) : renderList
+                    )}
+                </Box>
+            </Box>
         </Box>
     );
 }

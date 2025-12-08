@@ -13,7 +13,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import HomeIcon from '@mui/icons-material/Home';
 import Button from '@mui/material/Button';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 
 export default function AppBanner() {
     const { auth } = useContext(AuthContext);
@@ -135,39 +134,71 @@ export default function AppBanner() {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="fixed" sx={{ bgcolor: isSplash ? '#e600b6' : undefined }}>
-                <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="home"
-                        onClick={handleHome}
-                        sx={{ mr: 2 }}
-                    >
-                        <HomeIcon />
-                    </IconButton>
+            <AppBar 
+                position="fixed" 
+                sx={{ 
+                    bgcolor: isSplash ? '#1e88e5' : '#e600b6',
+                    boxShadow: isSplash ? undefined : '0 4px 10px rgba(0,0,0,0.25)'
+                }}
+            >
+                <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     {!isSplash && (
-                        <Typography                        
-                            variant="h4"
-                            noWrap
-                            component="div"
-                            sx={{ cursor: 'pointer' }}
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="home"
                             onClick={handleHome}
+                            sx={{ 
+                                bgcolor: 'white', 
+                                color: '#e600b6',
+                                '&:hover': { bgcolor: '#f5f5f5' }
+                            }}
                         >
-                            🎵The Playlister
-                        </Typography>
+                            <HomeIcon />
+                        </IconButton>
                     )}
 
-                    <Box sx={{ flexGrow: 1, display: 'flex', ml: isSplash ? 0 : 4 }}>
-                        {!isSplash && (
+                    {!isSplash && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
                             <Button
-                                color="inherit"
-                                onClick={() => history.push('/songs')}
-                                startIcon={<MusicNoteIcon />}
+                                variant="contained"
+                                sx={{ 
+                                    bgcolor: '#1b1b1b',
+                                    color: 'white',
+                                    textTransform: 'none',
+                                    '&:hover': { bgcolor: '#000' }
+                                }}
+                                onClick={() => history.push('/playlists')}
                             >
-                                Songs
+                                Playlists
                             </Button>
+                            <Button
+                                variant="contained"
+                                sx={{ 
+                                    bgcolor: '#4a6cff',
+                                    color: 'white',
+                                    textTransform: 'none',
+                                    '&:hover': { bgcolor: '#3856d6' }
+                                }}
+                                onClick={() => history.push('/songs')}
+                            >
+                                Song Catalog
+                            </Button>
+                        </Box>
+                    )}
+
+                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+                        {!isSplash && (
+                            <Typography                        
+                                variant="h4"
+                                noWrap
+                                component="div"
+                                sx={{ cursor: 'pointer' }}
+                                onClick={handleHome}
+                            >
+                                The Playlister
+                            </Typography>
                         )}
                     </Box>
                     
@@ -180,6 +211,7 @@ export default function AppBanner() {
                             aria-haspopup="true"
                             onClick={handleProfileMenuOpen}
                             color="inherit"
+                            sx={{ bgcolor: isSplash ? 'transparent' : 'transparent' }}
                         >
                             {getAccountMenu(auth.loggedIn)}
                         </IconButton>
