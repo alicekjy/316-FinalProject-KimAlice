@@ -27,6 +27,7 @@ import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditSongModal from './EditSongModal';
 import AddSongModal from './AddSongModal';
+import DeleteSongModal from './DeleteSongModal';
 
 export default function SongScreen() {
     const { auth } = useContext(AuthContext);
@@ -479,22 +480,12 @@ export default function SongScreen() {
                 onSave ={handleEdit}
             />
 
-            {/* Delete Song Modal */}
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-                <DialogTitle>Delete Song</DialogTitle>
-                <DialogContent>
-                    <Typography>
-                        Are you sure you want to delete "{selectedSong?.title}"?
-                    </Typography>
-                    <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                        This will remove it from all playlists and cannot be undone.
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleDelete} variant="contained" color="error">Delete</Button>
-                </DialogActions>
-            </Dialog>
+            <DeleteSongModal
+                open={deleteDialogOpen}
+                songTitle={selectedSong?.title || ''}
+                onConfirm={handleDelete}
+                onClose={() => setDeleteDialogOpen(false)}
+            />
         </Box>
     );
 }
