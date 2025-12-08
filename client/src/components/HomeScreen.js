@@ -24,6 +24,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import AppBanner from './AppBanner';
+import DeletePlaylistModal from './DeletePlaylistModal';
+import EditPlaylistModal from './EditPlaylistModal';
+import Collapse from '@mui/material/Collapse';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
@@ -41,9 +44,10 @@ export default function HomeScreen() {
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
-    const [editPlaylistName, setEditPlaylistName] = useState('');
     const isLoggedIn = auth.loggedIn;
+    const [expanded, setExpanded] = useState({});
 
     useEffect(() => {
         const loadData = async () => {
@@ -79,12 +83,11 @@ export default function HomeScreen() {
         store.createPlaylist();
     }
 
-    const handleDeletePlaylist = (id, event) => {
+    const handleDeletePlaylist = (playlist, event) => {
         event.stopPropagation();
-        if (window.confirm('Are you sure you want to delete this playlist?')) {
-            store.deletePlaylist(id);
-        }
-    }
+        setSelectedPlaylist(playlist);
+        setDeleteDialogOpen(true);
+    };
 
     const handleCopyPlaylist = (id, event) => {
         event.stopPropagation();
@@ -117,14 +120,20 @@ export default function HomeScreen() {
     const handleOpenEdit = (playlist, event) => {
         event.stopPropagation();
         setSelectedPlaylist(playlist);
-        setEditPlaylistName(playlist.name);
         setEditDialogOpen(true);
     };
 
-    const handleEditSave = async () => {
+    const handleEditSave = async (name, songs) => {
         if (!selectedPlaylist) return;
-        await store.updatePlaylist(selectedPlaylist._id, editPlaylistName, selectedPlaylist.songs || []);
+        await store.updatePlaylist(selectedPlaylist._id, name, songs || []);
         setEditDialogOpen(false);
+        setSelectedPlaylist(null);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!selectedPlaylist) return;
+        await store.deletePlaylist(selectedPlaylist._id);
+        setDeleteDialogOpen(false);
         setSelectedPlaylist(null);
     };
 
@@ -274,7 +283,34 @@ export default function HomeScreen() {
             {filteredPlaylists.map((playlist) => {
                 const isOwner = auth.loggedIn && auth.user && playlist.owner?._id === auth.user._id;
                 const listenerCount = playlist.playedBy?.length || 0;
-                const ownerName = playlist.owner?.username || playlist.ownerEmail || 'Unknown';
+                const ownerMatchesUser = auth.user && (
+                    playlist.owner?._id === auth.user._id ||
+                    (playlist.ownerEmail && playlist.ownerEmail === auth.user.email) ||
+                    (playlist.owner?.email && playlist.owner?.email === auth.user.email)
+                );
+
+                const ownerName = (() => {
+                    if (ownerMatchesUser) return auth.user.username || auth.user.email || 'Unknown';
+                    return (
+                        playlist.owner?.username ||
+                        playlist.ownerName ||
+                        playlist.ownerEmail ||
+                        playlist.owner?.email ||
+                        'Unknown'
+                    );
+                })();
+
+                const ownerAvatar = (() => {
+                    if (ownerMatchesUser) return auth.user.avatar || auth.user.image || null;
+                    return (
+                        playlist.owner?.avatar ||
+                        playlist.ownerAvatar ||
+                        playlist.owner?.profileImage ||
+                        playlist.owner?.avatarUrl ||
+                        playlist.owner?.image ||
+                        null
+                    );
+                })();
 
                 return (
                     <ListItem
@@ -289,8 +325,8 @@ export default function HomeScreen() {
                     >
                         <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ bgcolor: '#e3f2fd', color: '#0d47a1' }}>
-                                    {ownerName.substring(0, 2).toUpperCase()}
+                                <Avatar sx={{ bgcolor: '#e3f2fd', color: '#0d47a1' }} src={ownerAvatar || undefined}>
+                                    {!ownerAvatar && ownerName.substring(0, 2).toUpperCase()}
                                 </Avatar>
                                 <Box sx={{ flexGrow: 1 }}>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
@@ -310,7 +346,7 @@ export default function HomeScreen() {
                                                 variant="contained" 
                                                 sx={{ bgcolor: '#e53935', '&:hover': { bgcolor: '#c62828' } }}
                                                 size="small"
-                                                onClick={(e) => handleDeletePlaylist(playlist._id, e)}
+                                                onClick={(e) => handleDeletePlaylist(playlist, e)}
                                             >
                                                 Delete
                                             </Button>
@@ -340,11 +376,26 @@ export default function HomeScreen() {
                                     >
                                         Play
                                     </Button>
-                                    <IconButton>
+                                    <IconButton onClick={() => setExpanded(prev => ({ ...prev, [playlist._id]: !prev[playlist._id] }))}>
                                         <ArrowDropDownIcon />
                                     </IconButton>
                                 </Box>
                             </Box>
+                            <Collapse in={!!expanded[playlist._id]} timeout="auto" unmountOnExit>
+                                <Box sx={{ mt: 1, pl: 6, pr: 2, pb: 1 }}>
+                                    {playlist.songs && playlist.songs.length > 0 ? (
+                                        playlist.songs.map((song, idx) => (
+                                            <Typography key={idx} variant="body2" sx={{ color: '#333' }}>
+                                                {idx + 1}. {song.title} by {song.artist} ({song.year})
+                                            </Typography>
+                                        ))
+                                    ) : (
+                                        <Typography variant="body2" color="text.secondary">
+                                            No songs in this playlist.
+                                        </Typography>
+                                    )}
+                                </Box>
+                            </Collapse>
                         </Box>
                     </ListItem>
                 );
@@ -372,7 +423,7 @@ export default function HomeScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
@@ -520,26 +571,19 @@ export default function HomeScreen() {
                 </Box>
                 </Box>
             </Box>
-            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Edit Playlist</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Playlist Name"
-                        value={editPlaylistName}
-                        onChange={(e) => setEditPlaylistName(e.target.value)}
-                        margin="normal"
-                        autoFocus
-                    />
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                        Songs: {selectedPlaylist?.songs?.length || 0}
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleEditSave} variant="contained">Save</Button>
-                </DialogActions>
-            </Dialog>
+            <EditPlaylistModal
+                open={editDialogOpen}
+                playlist={selectedPlaylist}
+                onSave={handleEditSave}
+                onClose={() => { setEditDialogOpen(false); setSelectedPlaylist(null); }}
+                onAddSong={() => history.push('/songs')}
+            />
+            <DeletePlaylistModal
+                open={deleteDialogOpen}
+                playlistName={selectedPlaylist?.name || ''}
+                onConfirm={handleDeleteConfirm}
+                onClose={() => setDeleteDialogOpen(false)}
+            />
         </Box>
     );
 }
