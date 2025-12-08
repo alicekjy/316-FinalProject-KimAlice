@@ -33,7 +33,7 @@ export default function PlaylistScreen() {
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // Modal states
+    //modal states
     const [playDialogOpen, setPlayDialogOpen] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -60,7 +60,6 @@ export default function PlaylistScreen() {
             setLoading(false);
         };
         loadData();
-        // eslint-disable-next-line
     }, [auth.loggedIn]);
 
     const handleCreatePlaylist = () => {
@@ -132,7 +131,6 @@ export default function PlaylistScreen() {
 
     const handlePlaylistClick = (playlist) => {
         if (auth.loggedIn) {
-            // Open edit dialog or navigate to detailed view
             setSelectedPlaylist(playlist);
             setEditPlaylistName(playlist.name);
             setEditDialogOpen(true);
@@ -141,7 +139,7 @@ export default function PlaylistScreen() {
         }
     }
 
-    // Filter and sort playlists
+    // filter and sort playlists
     const getFilteredPlaylists = () => {
         const source = auth.loggedIn ? store.playlists : allPlaylists;
         let filtered = [...source];

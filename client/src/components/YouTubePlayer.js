@@ -12,7 +12,7 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
     const [playerReady, setPlayerReady] = useState(false);
 
     useEffect(() => {
-        // Load YouTube IFrame API
+        // API
         if (!window.YT) {
             const tag = document.createElement('script');
             tag.src = 'https://www.youtube.com/iframe_api';
@@ -38,7 +38,6 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
                 }
             }
         };
-        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
@@ -48,7 +47,6 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
                 player.loadVideoById(song.youtubeId);
             }
         }
-        // eslint-disable-next-line
     }, [currentSongIndex, playerReady]);
 
     const initPlayer = () => {
@@ -57,13 +55,13 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
         const song = playlist.songs[currentSongIndex || 0];
         if (!song || !song.youtubeId) return;
 
-        // Destroy existing player if any
+        // destroy existing player if any
         const existingIframe = document.getElementById('youtube-player');
         if (existingIframe && existingIframe.tagName === 'IFRAME') {
             existingIframe.remove();
         }
 
-        // Create new div for player
+        // create new div for player
         const playerDiv = document.createElement('div');
         playerDiv.id = 'youtube-player';
         const container = document.getElementById('youtube-player-container');
@@ -90,7 +88,7 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
                     },
                     onStateChange: (event) => {
                         console.log('Player state:', event.data);
-                        // Auto-play next when video ends
+                        //auto play next when video ends
                         if (event.data === window.YT.PlayerState.ENDED) {
                             handleNext();
                         }
@@ -111,10 +109,10 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
         try {
             const state = player.getPlayerState();
             console.log('Current state:', state);
-            
-            if (state === 1) { // Playing
+            //play - 1 , pause else
+            if (state === 1) { 
                 player.pauseVideo();
-            } else { // Paused or other
+            } else { 
                 player.playVideo();
             }
         } catch (error) {
@@ -166,7 +164,6 @@ export default function YouTubePlayer({ playlist, currentSongIndex, onSongChange
             </Typography>
 
             <Box sx={{ mb: 2 }} id="youtube-player-container">
-                {/* YouTube player will be inserted here */}
             </Box>
 
             <Box sx={{ 

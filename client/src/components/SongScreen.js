@@ -53,7 +53,6 @@ export default function SongScreen() {
 
     useEffect(() => {
         store.loadSongs();
-        // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
@@ -63,7 +62,6 @@ export default function SongScreen() {
         } else {
             setSelectedSong(null);
         }
-        // eslint-disable-next-line
     }, [store.songs, searchTitle, searchArtist, searchYear, sortBy, sortOrder]);
 
     const handleOpenAdd = () => {

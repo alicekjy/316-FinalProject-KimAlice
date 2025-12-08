@@ -21,7 +21,7 @@ function AuthContextProvider(props) {
 
     useEffect(() => {
         auth.getLoggedIn();
-        // eslint-disable-next-line
+        
     }, []);
 
     const authReducer = (action) => {

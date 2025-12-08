@@ -120,7 +120,7 @@ export default function HomeScreen() {
             setLoading(false);
         };
         loadData();
-        // eslint-disable-next-line
+
     }, [auth.loggedIn, sortBy, sortOrder]);
 
     const handleCreatePlaylist = () => {
@@ -258,7 +258,7 @@ export default function HomeScreen() {
 
     // Filter and sort playlists
     const getFilteredPlaylists = () => {
-        // Get the right playlist source
+        // Get the right playlist 
         const source = auth.loggedIn ? store.playlists : allPlaylists;
         let filtered = [...source];
         

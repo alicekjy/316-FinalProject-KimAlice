@@ -13,11 +13,8 @@ import Button from '@mui/material/Button';
 
 /**
  * Shared application banner with configurable nav buttons and account menu.
- * Modes:
  *  - simple (default): home + title + avatar menu
  *  - nav: home + optional nav buttons + title + avatar menu
- * Menu contents default to Login/Create when logged out, Edit/Logout when logged in,
- * but can be overridden via menuVariant.
  */
 export default function AppBanner({
     title = 'The Playlister',

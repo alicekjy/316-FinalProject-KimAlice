@@ -22,7 +22,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
 /**
  * edit modal for playlists: rename, reorder, remove songs with undo/redo.
- * Adding songs delegates to onAddSong (typically navigate to Song Catalog).
+ * Adding songs delegates to onAddSong.
  */
 export default function EditPlaylistModal({
     open,

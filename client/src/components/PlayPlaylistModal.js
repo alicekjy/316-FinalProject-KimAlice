@@ -55,7 +55,7 @@ export default function PlayPlaylistModal({
         }
     };
 
-    // load YouTube API and create player once modal opens
+    // load YouTube API // create player once modal opens
     useEffect(() => {
         let cancelled = false;       
 
