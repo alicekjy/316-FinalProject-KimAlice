@@ -19,68 +19,82 @@ export default function AddSongModal({
 
     return (
         <Dialog open={open} onClose={onCancel} maxWidth="sm" fullWidth>
-            <DialogTitle>Add New Song</DialogTitle>
-            <DialogContent>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                    <TextField
-                        fullWidth
-                        label="Title"
-                        value={title}
-                        onChange={(e) => onChange?.({ field: 'title', value: e.target.value })}
-                        autoFocus
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton size="small" onMouseDown={handleClear('title')} onClick={handleClear('title')}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            )
-                        }}
-                    />
-                    <TextField
-                        fullWidth
-                        label="Artist"
-                        value={artist}
-                        onChange={(e) => onChange?.({ field: 'artist', value: e.target.value })}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton size="small" onMouseDown={handleClear('artist')} onClick={handleClear('artist')}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            )
-                        }}
-                    />
-                    <TextField
-                        fullWidth
-                        label="Year"
-                        type="number"
-                        value={year}
-                        onChange={(e) => onChange?.({ field: 'year', value: e.target.value })}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton size="small" onMouseDown={handleClear('year')} onClick={handleClear('year')}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            )
-                        }}
-                    />
-                    <TextField
-                        fullWidth
-                        label="YouTube Video ID"
-                        value={youtubeId}
-                        onChange={(e) => onChange?.({ field: 'youtubeId', value: e.target.value })}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton size="small" onMouseDown={handleClear('youtubeId')} onClick={handleClear('youtubeId')}>
-                                    <CloseIcon fontSize="small" />
-                                </IconButton>
-                            )
-                        }}
-                    />
-                </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
-                <Button onClick={onSave} variant="contained">Add Song</Button>
+            <DialogTitle sx={{ bgcolor: '#205697', color: 'white', fontWeight: '800', fontSize: '1.4rem'}}>
+                Add New Song
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2}}>
+                        <TextField
+                            fullWidth
+                            label="Title"
+                            value={title}
+                            onChange={(e) => onChange?.({ field: 'title', value: e.target.value })}
+                            autoFocus
+                            InputProps={{
+                                endAdornment: (
+                                    <IconButton size="small" onMouseDown={handleClear('title')} onClick={handleClear('title')}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                )
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Artist"
+                            value={artist}
+                            onChange={(e) => onChange?.({ field: 'artist', value: e.target.value })}
+                            InputProps={{
+                                endAdornment: (
+                                    <IconButton size="small" onMouseDown={handleClear('artist')} onClick={handleClear('artist')}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                )
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Year"
+                            type="number"
+                            value={year}
+                            onChange={(e) => onChange?.({ field: 'year', value: e.target.value })}
+                            InputProps={{
+                                endAdornment: (
+                                    <IconButton size="small" onMouseDown={handleClear('year')} onClick={handleClear('year')}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                )
+                            }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="YouTube Video ID"
+                            value={youtubeId}
+                            onChange={(e) => onChange?.({ field: 'youtubeId', value: e.target.value })}
+                            InputProps={{
+                                endAdornment: (
+                                    <IconButton size="small" onMouseDown={handleClear('youtubeId')} onClick={handleClear('youtubeId')}>
+                                        <CloseIcon fontSize="small" />
+                                    </IconButton>
+                                )
+                            }}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ bgcolor: '#205697', pb: 2, pr: 3 }}>
+                <Button 
+                    variant="contained" 
+                    sx={{ bgcolor: '#424242', '&:hover': { bgcolor: '#2c2c2c' } }}
+                    onClick={onCancel}
+                >
+                    Cancel
+                </Button>
+                <Button 
+                    variant="contained" 
+                    sx={{ bgcolor: '#537fb5', '&:hover': { bgcolor: '#41648e' } }}
+                    onClick={onSave}
+                >
+                    Add Song
+                </Button>
             </DialogActions>
         </Dialog>
     );
