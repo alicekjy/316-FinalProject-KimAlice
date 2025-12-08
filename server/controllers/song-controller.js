@@ -133,7 +133,7 @@ updateSong = async(req, res) =>{
             });
         }
         const db = req.app.locals.db;
-        const song = await db.findSongsById(req.params.id);
+        const song = await db.findSongById(req.params.id);
 
         if(!song){
             return res.status(404).json({
