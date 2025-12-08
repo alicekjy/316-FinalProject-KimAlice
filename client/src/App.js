@@ -9,7 +9,8 @@ import {
     AppBanner,
     HomeScreen,
     PlaylistScreen,
-    SongScreen
+    SongScreen,
+    EditAccountScreen
 } from './components';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                         <Route path="/" exact component={SplashScreen} />
                         <Route path="/login" exact component={LoginScreen} />
                         <Route path="/register" exact component={RegisterScreen} />
+                        <Route path="/edit-account" exact component={EditAccountScreen} />
                         <Route path="/playlists" exact component={HomeScreen} />
                         <Route path="/home" exact render={() => <Redirect to="/playlists" />} />
                         <Route path="/playlist/:id" exact component={PlaylistScreen} />

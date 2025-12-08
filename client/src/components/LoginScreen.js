@@ -9,7 +9,7 @@ import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockIcon from '@mui/icons-material/Lock';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 
@@ -122,7 +122,7 @@ export default function LoginScreen() {
                         px: 4
                     }}
                 >
-                    <LockOpenIcon sx={{ fontSize: 56, color: '#333' }} />
+                    <LockIcon sx={{ fontSize: 56, color: '#333' }} />
                     <Typography variant="h4" sx={{ color: '#2f3b45', fontWeight: 600 }}>
                         Sign In
                     </Typography>

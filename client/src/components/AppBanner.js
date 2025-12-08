@@ -98,8 +98,9 @@ export default function AppBanner() {
             }}
             open={isMenuOpen}
             onClose={handleMenuClose}
+            MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
         >
-            <MenuItem onClick={handleEditAccount}>Edit Account</MenuItem>
+            <MenuItem sx={{ fontWeight: 600 }} onClick={handleEditAccount}>Edit Account</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>        
 
@@ -131,7 +132,7 @@ export default function AppBanner() {
         }
     }
 
-    if (isSplash || isPlaylists || isLogin || isRegister) {
+    if (isSplash || isPlaylists || isLogin || isRegister ) {
         return null;
     }
 
@@ -226,4 +227,3 @@ export default function AppBanner() {
         </Box>
     );
 }
-

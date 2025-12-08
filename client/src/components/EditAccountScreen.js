@@ -6,6 +6,15 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LockIcon from '@mui/icons-material/Lock';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function EditAccountScreen() {
     const { auth } = useContext(AuthContext);
@@ -14,6 +23,9 @@ export default function EditAccountScreen() {
     const [avatar, setAvatar] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
     useEffect(() => {
         if ( !auth.loggedIn) {
@@ -46,6 +58,13 @@ export default function EditAccountScreen() {
             return;
         }
 
+        if (password || passwordConfirm) {
+            if (password !== passwordConfirm) {
+                setErrorMessage("Passwords don't match");
+                return;
+            }
+        }
+
         try {
             const response = await fetch('http://localhost:4000/auth/update', {
                 method: 'PUT',
@@ -55,7 +74,8 @@ export default function EditAccountScreen() {
                 },
                 body: JSON.stringify({
                     username,
-                    avatar
+                    avatar,
+                    password
                 })
             });
 
@@ -64,8 +84,10 @@ export default function EditAccountScreen() {
             if (response.ok) {
                 setSuccessMessage('Account updated successfully!');
                 await auth.getLoggedIn();
+                setPassword('');
+                setPasswordConfirm('');
                 setTimeout(() => {
-                    history.push('/home');
+                    history.push('/playlists');
                 }, 1500);
             } else {
                 setErrorMessage(data.errorMessage || 'Failed to update account');
@@ -79,97 +101,240 @@ export default function EditAccountScreen() {
         return null;
     }
 
+    const handleMenuOpen = (event) => {
+        setMenuAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setMenuAnchorEl(null);
+    };
+
+    const handleMenuNav = (path) => {
+        history.push(path);
+        handleMenuClose();
+    };
+
     return (
-        <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '80vh',
-            padding: 3
-        }}>
-            <Box sx={{
-                bgcolor: 'white',
-                borderRadius: 2,
-                padding: 4,
-                minWidth: '400px',
-            }}>
-                <Typography variant="h4" sx={{ mb: 3, textAlign: 'center' }}>
-                    Edit Account
-                </Typography>
+        <Box 
+            sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: '100vh',
+                bgcolor: '#d7e9ff',
+                padding: 3
+            }}
+        >
+            <Box
+                sx={{
+                    bgcolor: '#f8fbff',
+                    border: '2px solid #b5c7e0',
+                    borderRadius: 1,
+                    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                    width: 'calc(100% - 48px)',
+                    maxWidth: '1200px',
+                    minHeight: '700px',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}
+            >
+                {/* Internal banner */}
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        bgcolor: '#1e88e5',
+                        color: 'white',
+                        px: 2,
+                        py: 1.5,
+                        borderBottom: '2px solid #b5c7e0'
+                    }}
+                >
+                    <IconButton 
+                        onClick={() => history.push('/playlists')}
+                        sx={{ 
+                            color: '#1e88e5',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#e3f2fd' }
+                        }}
+                        aria-label="Home"
+                    >
+                        <HomeIcon />
+                    </IconButton>
+                    
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        Edit Account
+                    </Typography>
 
-                {errorMessage && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
-                        {errorMessage}
-                    </Alert>
-                )}
+                    <IconButton 
+                        onClick={handleMenuOpen}
+                        sx={{ 
+                            color: '#1e88e5',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#e3f2fd' }
+                        }}
+                        aria-label="Account"
+                    >
+                        <AccountCircleIcon />
+                    </IconButton>
+                </Box>
 
-                {successMessage && (
-                    <Alert severity="success" sx={{ mb: 2 }}>
-                        {successMessage}
-                    </Alert>
-                )}
+                {/* Form content */}
+                <Box 
+                    sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 3,
+                        px: 4
+                    }}
+                >
+                    <LockIcon sx={{ fontSize: 56, color: '#333' }} />
+                    <Typography variant="h4" sx={{ color: '#2f3b45', fontWeight: 600 }}>
+                        Edit Account
+                    </Typography>
 
-                <form onSubmit={handleSubmit}>
-                    <TextField
-                        fullWidth
-                        label="Username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        margin="normal"
-                        required
-                    />
+                    {errorMessage && (
+                        <Alert severity="error" sx={{ width: '100%', maxWidth: 540 }}>
+                            {errorMessage}
+                        </Alert>
+                    )}
 
-                    <Box sx={{ mt: 2, mb: 2 }}>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                            Avatar:
-                        </Typography>
-                        {avatar && (
-                            <Box sx={{ mb: 2, textAlign: 'center' }}>
-                                <img 
-                                    src={avatar} 
-                                    alt="Current avatar" 
-                                    style={{ 
-                                        width: '100px', 
-                                        height: '100px', 
-                                        borderRadius: '50%',
-                                        objectFit: 'cover'
-                                    }} 
+                    {successMessage && (
+                        <Alert severity="success" sx={{ width: '100%', maxWidth: 540 }}>
+                            {successMessage}
+                        </Alert>
+                    )}
+
+                    <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', maxWidth: 640 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 90 }}>
+                                <Avatar 
+                                    src={avatar || undefined}
+                                    sx={{ width: 72, height: 72, bgcolor: '#e3f2fd', color: '#0d47a1' }}
+                                >
+                                    {username ? username.substring(0, 2).toUpperCase() : <PhotoCamera />}
+                                </Avatar>
+                                <Button
+                                    variant="outlined"
+                                    component="label"
+                                    size="small"
+                                    sx={{ mt: 1, bgcolor: '#e8f0fb', textTransform: 'none', minWidth: 90 }}
+                                >
+                                    Select
+                                    <input
+                                        type="file"
+                                        hidden
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                    />
+                                </Button>
+                            </Box>
+                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    placeholder="User Name"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    required
+                                    sx={{ bgcolor: '#e8f0fb' }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <IconButton size="small" onClick={() => setUsername('')}>
+                                                <CloseIcon fontSize="small" />
+                                            </IconButton>
+                                        )
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    placeholder="Email"
+                                    type="email"
+                                    value={auth.user?.email || ''}
+                                    disabled
+                                    sx={{ bgcolor: '#e8f0fb' }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <IconButton size="small" disabled>
+                                                <CloseIcon fontSize="small" />
+                                            </IconButton>
+                                        )
+                                    }}
+                                />
+                                <TextField 
+                                    fullWidth
+                                    placeholder="Password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    sx={{ bgcolor: '#e8f0fb' }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <IconButton size="small" onClick={() => setPassword('')}>
+                                                <CloseIcon fontSize="small" />
+                                            </IconButton>
+                                        )
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    placeholder="Password Confirm"
+                                    type="password"
+                                    value={passwordConfirm}
+                                    onChange={(e) => setPasswordConfirm(e.target.value)}
+                                    sx={{ bgcolor: '#e8f0fb' }}
+                                    InputProps={{
+                                        endAdornment: (
+                                            <IconButton size="small" onClick={() => setPasswordConfirm('')}>
+                                                <CloseIcon fontSize="small" />
+                                            </IconButton>
+                                        )
+                                    }}
                                 />
                             </Box>
-                        )}
-                        <Button
-                            variant="outlined"
-                            component="label"
-                            fullWidth
-                        >
-                            Change Avatar
-                            <input
-                                type="file"
-                                hidden
-                                accept="image/*"
-                                onChange={handleAvatarChange}
-                            />
-                        </Button>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                sx={{ bgcolor: '#1e88e5', '&:hover': { bgcolor: '#1565c0' } }}
+                            >
+                                Complete
+                            </Button>
+
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                onClick={() => history.push('/playlists')}
+                            >
+                                Cancel
+                            </Button>
+                        </Box>
                     </Box>
 
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        sx={{ mt: 2, mb: 2 }}
-                    >
-                        Save Changes
-                    </Button>
+                    <Typography variant="caption" sx={{ color: '#777', mt: 4 }}>
+                        Copyright © Playlister 2025
+                    </Typography>
+                </Box>
 
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={() => history.push('/home')}
-                    >
-                        Cancel
-                    </Button>
-                </form>
+                <Menu
+                    anchorEl={menuAnchorEl}
+                    open={Boolean(menuAnchorEl)}
+                    onClose={handleMenuClose}
+                >
+                    <MenuItem onClick={() => handleMenuNav('/edit-account')}>Edit Account</MenuItem>
+                    <MenuItem onClick={() => { handleMenuClose(); auth.logoutUser(); }}>Logout</MenuItem>
+                </Menu>
             </Box>
         </Box>
     );

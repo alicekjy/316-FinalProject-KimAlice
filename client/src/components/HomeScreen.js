@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import AuthContext from '../auth';
 import GlobalStoreContext from '../store';
 import Box from '@mui/material/Box';
@@ -26,6 +27,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
     const { store } = useContext(GlobalStoreContext);
+    const history = useHistory();
     const [filters, setFilters] = useState({
         playlistName: '',
         ownerUsername: '',
@@ -38,6 +40,7 @@ export default function HomeScreen() {
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const isLoggedIn = auth.loggedIn;
 
     useEffect(() => {
         const loadData = async () => {
@@ -187,6 +190,11 @@ export default function HomeScreen() {
 
     const handleMenuClose = () => {
         setMenuAnchorEl(null);
+    };
+
+    const handleMenuNav = (path) => {
+        history.push(path);
+        handleMenuClose();
     };
 
     const handleLogout = () => {
@@ -367,7 +375,7 @@ export default function HomeScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '800px',
+                    minHeight: '700px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
@@ -554,9 +562,11 @@ export default function HomeScreen() {
                 anchorEl={menuAnchorEl}
                 open={Boolean(menuAnchorEl)}
                 onClose={handleMenuClose}
+                MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
             >
                 {auth.loggedIn ? (
                     <>
+                        <MenuItem sx={{ fontWeight: 600 }} onClick={() => handleMenuNav('/edit-account')}>Edit Account</MenuItem>
                         <MenuItem onClick={handleLogout}>Logout</MenuItem>
                     </>
                 ) : (
