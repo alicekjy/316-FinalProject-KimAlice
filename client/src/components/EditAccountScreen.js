@@ -116,7 +116,7 @@ export default function EditAccountScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'

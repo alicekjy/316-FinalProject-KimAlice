@@ -40,7 +40,7 @@ export default function LoginScreen() {
                     width: '100%',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'

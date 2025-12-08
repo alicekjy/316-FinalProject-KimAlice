@@ -34,7 +34,7 @@ export default function SplashScreen() {
             <Box
                 sx={{
                     bgcolor: '#f8fbff',
-                    border: '2px solid #333',
+                    border: '2px solid #b5c7e0',
                     borderRadius: 1,
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: '100%',
