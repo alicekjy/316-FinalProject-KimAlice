@@ -1,32 +1,45 @@
 import { useContext, useState } from 'react';
-import { Link, useHistory, useLocation } from 'react-router-dom'
+import { useHistory } from 'react-router-dom';
 import AuthContext from '../auth';
-import GlobalStoreContext from '../store';
-
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Avatar from '@mui/material/Avatar';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import HomeIcon from '@mui/icons-material/Home';
 import Button from '@mui/material/Button';
 
-export default function AppBanner() {
+/**
+ * Shared application banner with configurable nav buttons and account menu.
+ * Modes:
+ *  - simple (default): home + title + avatar menu
+ *  - nav: home + optional nav buttons + title + avatar menu
+ * Menu contents default to Login/Create when logged out, Edit/Logout when logged in,
+ * but can be overridden via menuVariant.
+ */
+export default function AppBanner({
+    title = 'The Playlister',
+    onHome,
+    mode = 'simple', 
+    navButtons = [], 
+    menuVariant = 'auto',
+    titleSx = {}
+}) {
     const { auth } = useContext(AuthContext);
-    const { store } = useContext(GlobalStoreContext);
     const history = useHistory();
-    const location = useLocation();
     const [anchorEl, setAnchorEl] = useState(null);
-    const isMenuOpen = Boolean(anchorEl);
-    const isSplash = location.pathname === '/';
-    const isPlaylists = location.pathname === '/playlists';
-    const isLogin = location.pathname === '/login';
-    const isRegister = location.pathname === '/register';
 
-    const handleProfileMenuOpen = (event) => {
+    const handleHome = () => {
+        if (onHome) {
+            onHome();
+        } else {
+            history.push('/playlists');
+        }
+    };
+
+    const handleMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -34,196 +47,111 @@ export default function AppBanner() {
         setAnchorEl(null);
     };
 
+    const handleMenuNav = (path) => {
+        history.push(path);
+        handleMenuClose();
+    };
+
     const handleLogout = () => {
         handleMenuClose();
         auth.logoutUser();
-    }
+        history.push('/');
+    };
 
-
-    const handleEditAccount = () => {
-        handleMenuClose();
-        history.push('/edit-account');
-    }
-
-    const handleHome = () => {
-        if (store.currentPlaylist) {
-            store.closeCurrentPlaylist();
-        }
-        history.push('/playlists');
-    }
-
-    const menuId = 'primary-search-account-menu';
-    
-    const loggedOutMenu = (
-        <Menu
-            anchorEl={anchorEl}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            id={menuId}
-            keepMounted
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            open={isMenuOpen}
-            onClose={handleMenuClose}
-        >
-            <MenuItem onClick={handleMenuClose}>
-                <Link to='/login' style={{ textDecoration: 'none', color: 'inherit' }}>
-                    Login
-                </Link>
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
-                <Link to='/register' style={{ textDecoration: 'none', color: 'inherit' }}>
-                    Create Account
-                </Link>
-            </MenuItem>
-        </Menu>
-    );
-
-    const loggedInMenu = 
-        <Menu
-            anchorEl={anchorEl}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            id={menuId}
-            keepMounted
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            open={isMenuOpen}
-            onClose={handleMenuClose}
-            MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
-        >
-            <MenuItem sx={{ fontWeight: 600 }} onClick={handleEditAccount}>Edit Account</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-        </Menu>        
-
-    let menu = loggedOutMenu;
-    if (auth.loggedIn) {
-        menu = loggedInMenu;
-    }
-    
-    function getAccountMenu(loggedIn) {
-        if (loggedIn) {
-            let userInitials = auth.getUserInitials();
-            return (
-                <Box sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    bgcolor: 'secondary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1rem',
-                    fontWeight: 'bold'
-                }}>
-                    {userInitials}
-                </Box>
-            );
-        } else {
-            return <AccountCircle />;
-        }
-    }
-
-    if (isSplash || isPlaylists || isLogin || isRegister ) {
-        return null;
-    }
+    const resolvedMenuVariant = menuVariant === 'auto'
+        ? (auth.loggedIn ? 'auth' : 'guest')
+        : menuVariant;
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar 
-                position="fixed" 
-                sx={{ 
-                    bgcolor: isSplash ? '#1e88e5' : '#e600b6',
-                    boxShadow: isSplash ? undefined : '0 4px 10px rgba(0,0,0,0.25)'
-                }}
+        <Box 
+            sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                bgcolor: '#205697',
+                color: 'white',
+                px: 2,
+                py: 1.5,
+                borderBottom: '2px solid #b5c7e0',
+                gap: 2
+            }}
+        >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton 
+                    onClick={handleHome}
+                    sx={{ 
+                        p: 0.5,
+                        bgcolor: 'white',
+                        '&:hover': { bgcolor: '#e3f2fd' }
+                    }}
+                    aria-label="Home"
+                >
+                    <HomeIcon sx={{ color: '#205697' }} />
+                </IconButton>
+
+                {mode === 'nav' && navButtons.map((btn) => (
+                    <Button
+                        key={btn.label}
+                        variant="contained"
+                        size="small"
+                        onClick={() => {
+                            if (btn.onClick) btn.onClick();
+                            if (btn.to) history.push(btn.to);
+                        }}
+                        sx={{
+                            bgcolor: btn.bgcolor || '#e3f2fd',
+                            color: btn.color || '#0d47a1',
+                            border: '1px solid #0d47a1',
+                            '&:hover': { bgcolor: btn.hoverBg || '#d0e6ff' },
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            boxShadow: 'none'
+                        }}
+                    >
+                        {btn.label}
+                    </Button>
+                ))}
+            </Box>
+
+            <Typography variant="h5" sx={{ fontWeight: 700, textAlign: 'center', flexGrow: 1, ...titleSx }}>
+                {title}
+            </Typography>
+
+            <IconButton 
+                onClick={handleMenuOpen}
+                sx={{ p: 0.5 }}
+                aria-label="Account"
             >
-                <Toolbar sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {!isSplash && (
-                        <IconButton
-                            size="large"
-                            edge="start"
-                            color="inherit"
-                            aria-label="home"
-                            onClick={handleHome}
-                            sx={{ 
-                                bgcolor: 'white', 
-                                color: '#e600b6',
-                                '&:hover': { bgcolor: '#f5f5f5' }
-                            }}
-                        >
-                            <HomeIcon />
-                        </IconButton>
-                    )}
+                {auth.user?.avatar ? (
+                    <Avatar 
+                        src={auth.user.avatar} 
+                        sx={{ width: 32, height: 32 }}
+                    />
+                ) : (
+                    <AccountCircleIcon sx={{ color: 'white', fontSize: 32 }} />
+                )}
+            </IconButton>
 
-                    {!isSplash && (
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button
-                                variant="contained"
-                                sx={{ 
-                                    bgcolor: '#1b1b1b',
-                                    color: 'white',
-                                    textTransform: 'none',
-                                    '&:hover': { bgcolor: '#000' }
-                                }}
-                                onClick={() => history.push('/playlists')}
-                            >
-                                Playlists
-                            </Button>
-                            <Button
-                                variant="contained"
-                                sx={{ 
-                                    bgcolor: '#4a6cff',
-                                    color: 'white',
-                                    textTransform: 'none',
-                                    '&:hover': { bgcolor: '#3856d6' }
-                                }}
-                                onClick={() => history.push('/songs')}
-                            >
-                                Song Catalog
-                            </Button>
-                        </Box>
-                    )}
-
-                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-                        {!isSplash && (
-                            <Typography                        
-                                variant="h4"
-                                noWrap
-                                component="div"
-                                sx={{ cursor: 'pointer' }}
-                                onClick={handleHome}
-                            >
-                                The Playlister
-                            </Typography>
-                        )}
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton
-                            size="large"
-                            edge="end"
-                            aria-label="account of current user"
-                            aria-controls={menuId}
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuOpen}
-                            color="inherit"
-                            sx={{ bgcolor: isSplash ? 'transparent' : 'transparent' }}
-                        >
-                            {getAccountMenu(auth.loggedIn)}
-                        </IconButton>
-                    </Box>
-                </Toolbar>
-            </AppBar>
-            <Toolbar />
-            {menu}
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
+            >
+                {resolvedMenuVariant === 'auth' ? (
+                    <>
+                        <MenuItem onClick={() => handleMenuNav('/edit-account')}>
+                            Edit Account
+                        </MenuItem>
+                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </>
+                ) : (
+                    <>
+                        <MenuItem onClick={() => handleMenuNav('/login')}>Login</MenuItem>
+                        <MenuItem onClick={() => handleMenuNav('/register')}>Create Account</MenuItem>
+                    </>
+                )}
+            </Menu>
         </Box>
     );
 }

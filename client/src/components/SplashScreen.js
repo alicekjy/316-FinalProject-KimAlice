@@ -2,9 +2,7 @@ import { useHistory } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import IconButton from '@mui/material/IconButton';
+import AppBanner from './AppBanner';
 
 export default function SplashScreen() {
     const history = useHistory();
@@ -47,47 +45,7 @@ export default function SplashScreen() {
                     flexDirection: 'column'
                 }}
             >
-                {/* Banner - Inside the box */}
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        bgcolor: '#205697',
-                        color: 'white',
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: '2px solid #333'
-                    }}
-                >
-                    <IconButton 
-                        onClick={() => history.push('/')}
-                        sx={{ 
-                            color: 'white',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#f0f0f0' }
-                        }}
-                        aria-label="Home"
-                    >
-                        <HomeIcon sx={{ color: '#205697' }} />
-                    </IconButton>
-                    
-                    <IconButton 
-                        onClick={handleLogin}
-                        sx={{ 
-                            color: 'white',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#f0f0f0' }
-                        }}
-                        aria-label="Account"
-                    >
-                        <AccountCircleIcon sx={{ color: '#205697' }} />
-                    </IconButton>
-                </Box>
+                <AppBanner title="The Playlister" onHome={() => history.push('/')} menuVariant="guest" />
 
                 {/* Content Area - Title and Icon */}
                 <Box 

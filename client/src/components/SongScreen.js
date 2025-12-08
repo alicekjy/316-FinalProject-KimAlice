@@ -20,6 +20,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import AppBanner from './AppBanner';
 
 export default function SongScreen() {
     const { auth } = useContext(AuthContext);
@@ -146,147 +147,178 @@ export default function SongScreen() {
     const filteredSongs = getFilteredSongs();
 
     return (
-        <Box sx={{ padding: 3 }}>
-            <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
+        <Box
+            sx={{
+                padding: 3,
+                minHeight: '100vh',
+                bgcolor: '#e6f0ff',
+                display: 'flex',
                 alignItems: 'center',
-                mb: 3
-            }}>
-                <Typography variant="h5" sx={{ color: 'white' }}>
-                    Song Catalog ({filteredSongs.length} songs)
-                </Typography>
-                {auth.loggedIn && (
-                    <Button 
-                        variant="contained" 
-                        color="primary"
-                        onClick={handleOpenAdd}
-                    >
-                        + Add Song
-                    </Button>
-                )}
-            </Box>
+                justifyContent: 'center'
+            }}
+        >
+            <Box
+                sx={{
+                    bgcolor: '#f5f9ff',
+                    border: '2px solid #b5c7e0',
+                    borderRadius: 1,
+                    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                    width: 'calc(100% - 48px)',
+                    maxWidth: '1200px',
+                    minHeight: '700px',
+                    margin: '0 auto',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3
+                }}
+            >
+                <AppBanner 
+                    title="The Playlister" 
+                    mode="nav"
+                    navButtons={[
+                        { label: 'Playlists', to: '/playlists' },
+                        { label: 'Song Catalog', to: '/songs' }
+                    ]}
+                />
 
-            {/* Search/Filter Box */}
-            <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, mb: 2 }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} sm={3}>
-                        <TextField
-                            fullWidth
-                            label="Search Title"
-                            value={searchTitle}
-                            onChange={(e) => setSearchTitle(e.target.value)}
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField
-                            fullWidth
-                            label="Search Artist"
-                            value={searchArtist}
-                            onChange={(e) => setSearchArtist(e.target.value)}
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={2}>
-                        <TextField
-                            fullWidth
-                            label="Year"
-                            value={searchYear}
-                            onChange={(e) => setSearchYear(e.target.value)}
-                            size="small"
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={2}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Sort By</InputLabel>
-                            <Select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                label="Sort By"
+                <Box sx={{ padding: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#1f3c59' }}>
+                            Song Catalog ({filteredSongs.length} songs)
+                        </Typography>
+                        {auth.loggedIn && (
+                            <Button 
+                                variant="contained" 
+                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
+                                onClick={handleOpenAdd}
                             >
-                                <MenuItem value="title">Title</MenuItem>
-                                <MenuItem value="artist">Artist</MenuItem>
-                                <MenuItem value="year">Year</MenuItem>
-                                <MenuItem value="listens">Listens</MenuItem>
-                                <MenuItem value="playlists">Playlists</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={12} sm={2}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>Order</InputLabel>
-                            <Select
-                                value={sortOrder}
-                                onChange={(e) => setSortOrder(e.target.value)}
-                                label="Order"
-                            >
-                                <MenuItem value="asc">Ascending</MenuItem>
-                                <MenuItem value="desc">Descending</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                </Grid>
-            </Box>
+                                + Add Song
+                            </Button>
+                        )}
+                    </Box>
 
-            {/* Songs List */}
-            {filteredSongs.length === 0 ? (
-                <Box sx={{
-                    bgcolor: 'white',
-                    borderRadius: 2,
-                    padding: 4,
-                    textAlign: 'center'
-                }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                        No songs found
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        {store.songs.length === 0 
-                            ? (auth.loggedIn ? 'Click "Add Song" to add the first song!' : 'Login to add songs')
-                            : 'Try different search criteria'}
-                    </Typography>
-                </Box>
-            ) : (
-                <List sx={{ bgcolor: 'white', borderRadius: 2 }}>
-                    {filteredSongs.map((song) => {
-                        const isOwner = auth.loggedIn && auth.user && song.addedBy === auth.user._id;
-                        
-                        return (
-                            <ListItem
-                                key={song._id}
-                                sx={{
-                                    borderBottom: '1px solid #e0e0e0',
-                                    '&:last-child': { borderBottom: 'none' }
-                                }}
-                            >
-                                <ListItemText
-                                    primary={song.title}
-                                    secondary={`${song.artist} • ${song.year} • Listens: ${song.numListens || 0} • In ${song.numPlaylists || 0} playlist(s)`}
+                    <Box sx={{ bgcolor: 'white', borderRadius: 2, padding: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={3}>
+                                <TextField
+                                    fullWidth
+                                    label="Search Title"
+                                    value={searchTitle}
+                                    onChange={(e) => setSearchTitle(e.target.value)}
+                                    size="small"
                                 />
-                                {isOwner && (
-                                    <>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="edit"
-                                            sx={{ mr: 1 }}
-                                            onClick={() => handleOpenEdit(song)}
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                        <IconButton
-                                            edge="end"
-                                            aria-label="delete"
-                                            onClick={() => handleOpenDelete(song)}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </>
-                                )}
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            )}
+                            </Grid>
+                            <Grid item xs={12} sm={3}>
+                                <TextField
+                                    fullWidth
+                                    label="Search Artist"
+                                    value={searchArtist}
+                                    onChange={(e) => setSearchArtist(e.target.value)}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Year"
+                                    value={searchYear}
+                                    onChange={(e) => setSearchYear(e.target.value)}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={2}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Sort By</InputLabel>
+                                    <Select
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                        label="Sort By"
+                                    >
+                                        <MenuItem value="title">Title</MenuItem>
+                                        <MenuItem value="artist">Artist</MenuItem>
+                                        <MenuItem value="year">Year</MenuItem>
+                                        <MenuItem value="listens">Listens</MenuItem>
+                                        <MenuItem value="playlists">Playlists</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} sm={2}>
+                                <FormControl fullWidth size="small">
+                                    <InputLabel>Order</InputLabel>
+                                    <Select
+                                        value={sortOrder}
+                                        onChange={(e) => setSortOrder(e.target.value)}
+                                        label="Order"
+                                    >
+                                        <MenuItem value="asc">Ascending</MenuItem>
+                                        <MenuItem value="desc">Descending</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                        </Grid>
+                    </Box>
+
+                    {filteredSongs.length === 0 ? (
+                        <Box sx={{
+                            bgcolor: 'white',
+                            borderRadius: 2,
+                            padding: 4,
+                            textAlign: 'center',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+                        }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                No songs found
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {store.songs.length === 0 
+                                    ? (auth.loggedIn ? 'Click "Add Song" to add the first song!' : 'Login to add songs')
+                                    : 'Try different search criteria'}
+                            </Typography>
+                        </Box>
+                    ) : (
+                        <List sx={{ bgcolor: 'white', borderRadius: 2, boxShadow: '0 2px 6px rgba(0,0,0,0.12)' }}>
+                            {filteredSongs.map((song) => {
+                                const isOwner = auth.loggedIn && auth.user && song.addedBy === auth.user._id;
+                                
+                                return (
+                                    <ListItem
+                                        key={song._id}
+                                        sx={{
+                                            borderBottom: '1px solid #e0e0e0',
+                                            '&:last-child': { borderBottom: 'none' }
+                                        }}
+                                    >
+                                        <ListItemText
+                                            primary={song.title}
+                                            secondary={`${song.artist} • ${song.year} • Listens: ${song.numListens || 0} • In ${song.numPlaylists || 0} playlist(s)`}
+                                        />
+                                        {isOwner && (
+                                            <>
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="edit"
+                                                    sx={{ mr: 1 }}
+                                                    onClick={() => handleOpenEdit(song)}
+                                                >
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="delete"
+                                                    onClick={() => handleOpenDelete(song)}
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </>
+                                        )}
+                                    </ListItem>
+                                );
+                            })}
+                        </List>
+                    )}
+                </Box>
+            </Box>
 
             {/* Add Song Modal */}
             <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>

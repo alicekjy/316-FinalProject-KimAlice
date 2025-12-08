@@ -22,9 +22,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import Menu from '@mui/material/Menu';
+import AppBanner from './AppBanner';
 
 export default function PlaylistScreen() {
     const { auth } = useContext(AuthContext);
@@ -42,7 +40,6 @@ export default function PlaylistScreen() {
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     const [editPlaylistName, setEditPlaylistName] = useState('');
     const isLoggedIn = auth.loggedIn;
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -196,25 +193,6 @@ export default function PlaylistScreen() {
         );
     }
 
-    const handleMenuOpen = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setMenuAnchorEl(null);
-    };
-
-    const handleMenuNav = (path) => {
-        handleMenuClose();
-        store.closeCurrentPlaylist();
-        window.location.href = path;
-    };
-
-    const handleLogout = () => {
-        handleMenuClose();
-        auth.logoutUser();
-    };
-
     return (
         <Box sx={{ padding: 3, minHeight: '100vh', bgcolor: '#d7e9ff' }}>
             <Box
@@ -225,58 +203,22 @@ export default function PlaylistScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'
                 }}
             >
-                {/* Internal banner */}
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        bgcolor: '#1e88e5',
-                        color: 'white',
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: '2px solid #b5c7e0'
-                    }}
-                >
-                    <IconButton 
-                        onClick={() => store.closeCurrentPlaylist()}
-                        sx={{ 
-                            color: '#1e88e5',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Home"
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                        Playlists
-                    </Typography>
-
-                    <IconButton 
-                        onClick={handleMenuOpen}
-                        sx={{ 
-                            color: '#1e88e5',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Account"
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Box>
+                <AppBanner 
+                    title="The Playlister" 
+                    onHome={() => store.closeCurrentPlaylist()} 
+                    mode="nav"
+                    navButtons={[
+                        { label: 'Playlists', to: '/playlists' },
+                        { label: 'Song Catalog', to: '/songs', bgcolor: '#0d47a1', color: 'white', hoverBg: '#1565c0' }
+                    ]}
+                />
 
                 <Box sx={{ padding: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Box sx={{ 
@@ -294,14 +236,14 @@ export default function PlaylistScreen() {
                         {auth.loggedIn ? (
                             <Button 
                                 variant="contained" 
-                                sx={{ bgcolor: '#1e88e5', '&:hover': { bgcolor: '#1565c0' } }}
+                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                 onClick={handleCreatePlaylist}
                             >
                                 + New Playlist
                             </Button>
                         ) : (
                             <Box sx={{ display: 'flex', gap: 1 }}>
-                                <Button variant="contained" size="small" href="/login" sx={{ bgcolor: '#1e88e5' }}>
+                                <Button variant="contained" size="small" href="/login" sx={{ bgcolor: '#205697' }}>
                                     Login
                                 </Button>
                                 <Button variant="contained" color="secondary" size="small" href="/register">
@@ -443,26 +385,6 @@ export default function PlaylistScreen() {
                         </List>
             )}
         </Box>
-                <Menu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean(menuAnchorEl)}
-                    onClose={handleMenuClose}
-                    MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
-                >
-                    {isLoggedIn ? (
-                        <>
-                            <MenuItem sx={{ fontWeight: 600 }} onClick={() => handleMenuNav('/edit-account')}>
-                                Edit Account
-                            </MenuItem>
-                            <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                        </>
-                    ) : (
-                        <>
-                            <MenuItem onClick={() => handleMenuNav('/login')}>Login</MenuItem>
-                            <MenuItem onClick={() => handleMenuNav('/register')}>Create Account</MenuItem>
-                        </>
-                    )}
-                </Menu>
             </Box>
 
             {/* Play Playlist Modal */}

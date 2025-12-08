@@ -8,13 +8,10 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
+import AppBanner from './AppBanner';
 
 export default function EditAccountScreen() {
     const { auth } = useContext(AuthContext);
@@ -25,7 +22,6 @@ export default function EditAccountScreen() {
     const [successMessage, setSuccessMessage] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
     useEffect(() => {
         if ( !auth.loggedIn) {
@@ -101,19 +97,6 @@ export default function EditAccountScreen() {
         return null;
     }
 
-    const handleMenuOpen = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setMenuAnchorEl(null);
-    };
-
-    const handleMenuNav = (path) => {
-        history.push(path);
-        handleMenuClose();
-    };
-
     return (
         <Box 
             sx={{
@@ -139,51 +122,11 @@ export default function EditAccountScreen() {
                     flexDirection: 'column'
                 }}
             >
-                {/* Internal banner */}
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        bgcolor: '#1e88e5',
-                        color: 'white',
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: '2px solid #b5c7e0'
-                    }}
-                >
-                    <IconButton 
-                        onClick={() => history.push('/playlists')}
-                        sx={{ 
-                            color: '#1e88e5',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Home"
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        Edit Account
-                    </Typography>
-
-                    <IconButton 
-                        onClick={handleMenuOpen}
-                        sx={{ 
-                            color: '#1e88e5',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Account"
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Box>
+                <AppBanner 
+                    title="Edit Account" 
+                    onHome={() => history.push('/playlists')} 
+                    menuVariant="auth"
+                />
 
                 {/* Form content */}
                 <Box 
@@ -326,15 +269,6 @@ export default function EditAccountScreen() {
                         Copyright © Playlister 2025
                     </Typography>
                 </Box>
-
-                <Menu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean(menuAnchorEl)}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem onClick={() => handleMenuNav('/edit-account')}>Edit Account</MenuItem>
-                    <MenuItem onClick={() => { handleMenuClose(); auth.logoutUser(); }}>Logout</MenuItem>
-                </Menu>
             </Box>
         </Box>
     );

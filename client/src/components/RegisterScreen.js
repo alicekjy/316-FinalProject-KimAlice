@@ -8,13 +8,10 @@ import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import CloseIcon from '@mui/icons-material/Close';
+import AppBanner from './AppBanner';
 
 export default function RegisterScreen() {
     const { auth } = useContext(AuthContext);
@@ -23,7 +20,6 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState('');
     const [passwordVerify, setPasswordVerify] = useState('');
     const [avatar, setAvatar] = useState('');
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
     const history = useHistory();
 
     const handleAvatarChange = (event) => {
@@ -46,19 +42,6 @@ export default function RegisterScreen() {
         auth.registerUser(username, email, password, passwordVerify, avatar);
     };
 
-    const handleMenuOpen = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setMenuAnchorEl(null);
-    };
-
-    const handleMenuNav = (path) => {
-        history.push(path);
-        handleMenuClose();
-    };
-
     return (
         <Box 
             sx={{
@@ -78,53 +61,17 @@ export default function RegisterScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: 'calc(100% - 48px)',
                     maxWidth: '1200px',
-                    minHeight: '800px',
+                    minHeight: '700px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'
                 }}
             >
-                {/* Internal banner */}
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        bgcolor: '#205697',
-                        color: 'white',
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: '2px solid #b5c7e0'
-                    }}
-                >
-                    <IconButton 
-                        onClick={() => history.push('/')}
-                        sx={{ 
-                            color: '#205697',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Home"
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    
-                    <IconButton 
-                        onClick={handleMenuOpen}
-                        sx={{ 
-                            color: '#205697',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Account"
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Box>
+                <AppBanner 
+                    title="Create Account" 
+                    onHome={() => history.push('/')} 
+                    menuVariant="guest"
+                />
 
                 {/* Form content */}
                 <Box 
@@ -138,7 +85,7 @@ export default function RegisterScreen() {
                         px: 4
                     }}
                 >
-                    <LockIcon sx={{ fontSize: 50, color: '#333' }} />
+                    <LockIcon sx={{ fontSize: 56, color: '#333' }} />
                     <Typography variant="h4" sx={{ color: '#2f3b45', fontWeight: 600 }}>
                         Create Account
                     </Typography>
@@ -262,14 +209,6 @@ export default function RegisterScreen() {
                     </Typography>
                 </Box>
 
-                <Menu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean(menuAnchorEl)}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem onClick={() => handleMenuNav('/login')}>Login</MenuItem>
-                    <MenuItem onClick={() => handleMenuNav('/register')}>Create Account</MenuItem>
-                </Menu>
             </Box>
         </Box>
     );

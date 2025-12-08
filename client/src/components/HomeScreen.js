@@ -13,16 +13,17 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TextField from '@mui/material/TextField';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import HomeIcon from '@mui/icons-material/Home';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import Avatar from '@mui/material/Avatar';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import AppBanner from './AppBanner';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
@@ -39,7 +40,9 @@ export default function HomeScreen() {
     const [sortOrder, setSortOrder] = useState('desc');
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+    const [editPlaylistName, setEditPlaylistName] = useState('');
     const isLoggedIn = auth.loggedIn;
 
     useEffect(() => {
@@ -106,12 +109,24 @@ export default function HomeScreen() {
     }
 
     const handlePlaylistClick = (id) => {
-        if (auth.loggedIn) {
-            store.setCurrentPlaylist(id);
-        } else {
+        if (!auth.loggedIn) {
             alert('Please login to view and edit playlist details');
         }
     }
+
+    const handleOpenEdit = (playlist, event) => {
+        event.stopPropagation();
+        setSelectedPlaylist(playlist);
+        setEditPlaylistName(playlist.name);
+        setEditDialogOpen(true);
+    };
+
+    const handleEditSave = async () => {
+        if (!selectedPlaylist) return;
+        await store.updatePlaylist(selectedPlaylist._id, editPlaylistName, selectedPlaylist.songs || []);
+        setEditDialogOpen(false);
+        setSelectedPlaylist(null);
+    };
 
     const handleFilterChange = (field, value) => {
         setFilters(prev => ({ ...prev, [field]: value }));
@@ -182,24 +197,6 @@ export default function HomeScreen() {
     const toggleSortOrder = async () => {
         const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
         setSortOrder(nextOrder);
-    };
-
-    const handleMenuOpen = (event) => {
-        setMenuAnchorEl(event.currentTarget);
-    };
-
-    const handleMenuClose = () => {
-        setMenuAnchorEl(null);
-    };
-
-    const handleMenuNav = (path) => {
-        history.push(path);
-        handleMenuClose();
-    };
-
-    const handleLogout = () => {
-        handleMenuClose();
-        auth.logoutUser();
     };
 
     // Filter and sort playlists
@@ -321,7 +318,7 @@ export default function HomeScreen() {
                                                 variant="contained" 
                                                 sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                                 size="small"
-                                                onClick={(e) => handlePlaylistClick(playlist._id, e)}
+                                                onClick={(e) => handleOpenEdit(playlist, e)}
                                             >
                                                 Edit
                                             </Button>
@@ -384,51 +381,16 @@ export default function HomeScreen() {
                     mt: 0
                 }}
             >
-                {/* Internal banner */}
-                <Box 
-                    sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between',
-                        bgcolor: '#205697',
-                        color: 'white',
-                        px: 2,
-                        py: 1.5,
-                        borderBottom: '2px solid #b5c7e0'
-                    }}
-                >
-                    <IconButton 
-                        onClick={() => store.closeCurrentPlaylist()}
-                        sx={{ 
-                            color: '#205697',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Home"
-                    >
-                        <HomeIcon />
-                    </IconButton>
-                    
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                        The Playlister
-                    </Typography>
-
-                    <IconButton 
-                        onClick={handleMenuOpen}
-                        sx={{ 
-                            color: '#205697',
-                            bgcolor: 'white',
-                            width: 40,
-                            height: 40,
-                            '&:hover': { bgcolor: '#e3f2fd' }
-                        }}
-                        aria-label="Account"
-                    >
-                        <AccountCircleIcon />
-                    </IconButton>
-                </Box>
+                <AppBanner 
+                    title="The Playlister" 
+                    onHome={() => history.push('/')} 
+                    mode="nav"
+                    navButtons={[
+                        { label: 'Playlists', to: '/playlists', bgcolor: '#e3f2fd', color: '#0d47a1', hoverBg: '#d0e6ff' },
+                        { label: 'Song Catalog', to: '/songs', bgcolor: '#0d47a1', color: 'white', hoverBg: '#1565c0' }
+                    ]}
+                    menuVariant="auto"
+                />
 
                 <Box
                     sx={{
@@ -558,24 +520,26 @@ export default function HomeScreen() {
                 </Box>
                 </Box>
             </Box>
-            <Menu
-                anchorEl={menuAnchorEl}
-                open={Boolean(menuAnchorEl)}
-                onClose={handleMenuClose}
-                MenuListProps={{ sx: { bgcolor: '#f5e9ff' } }}
-            >
-                {auth.loggedIn ? (
-                    <>
-                        <MenuItem sx={{ fontWeight: 600 }} onClick={() => handleMenuNav('/edit-account')}>Edit Account</MenuItem>
-                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                    </>
-                ) : (
-                    <>
-                        <MenuItem component="a" href="/login">Login</MenuItem>
-                        <MenuItem component="a" href="/register">Create Account</MenuItem>
-                    </>
-                )}
-            </Menu>
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Edit Playlist</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth
+                        label="Playlist Name"
+                        value={editPlaylistName}
+                        onChange={(e) => setEditPlaylistName(e.target.value)}
+                        margin="normal"
+                        autoFocus
+                    />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                        Songs: {selectedPlaylist?.songs?.length || 0}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleEditSave} variant="contained">Save</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
