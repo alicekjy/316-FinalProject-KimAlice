@@ -28,6 +28,10 @@ import DeletePlaylistModal from './DeletePlaylistModal';
 import EditPlaylistModal from './EditPlaylistModal';
 import Collapse from '@mui/material/Collapse';
 import PlayPlaylistModal from './PlayPlaylistModal';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
@@ -241,7 +245,12 @@ export default function HomeScreen() {
         }
         setLoading(false);
     };
-
+    const handleFilterKeyDown = (event) => {
+        if(event.key === 'Enter'){
+            event.preventDefault();
+            handleSearch();
+        }
+    }
     const toggleSortOrder = async () => {
         const nextOrder = sortOrder === 'asc' ? 'desc' : 'asc';
         setSortOrder(nextOrder);
@@ -296,8 +305,8 @@ export default function HomeScreen() {
                     comparison = (a.playedBy?.length || 0) - (b.playedBy?.length || 0);
                     break;
                 case 'owner':
-                    const ownerA = a.owner?.username || a.ownerEmail || '';
-                    const ownerB = b.owner?.username || b.ownerEmail || '';
+                    const ownerA = (a.owner?.username || a.ownerName || a.ownerEmail || a.owner?.email || '').toLowerCase();
+                    const ownerB = (b.owner?.username || b.ownerName || b.ownerEmail || b.owner?.email || '').toLowerCase();
                     comparison = ownerA.localeCompare(ownerB);
                     break;
                 default:
@@ -475,6 +484,7 @@ export default function HomeScreen() {
                             placeholder="by Playlist Name"
                             value={filters.playlistName}
                             onChange={(e) => handleFilterChange('playlistName', e.target.value)}
+                            onKeyDown ={handleFilterKeyDown}
                             size="small"
                             sx={{ bgcolor: '#e8f0fb' }}
                         />
@@ -483,6 +493,7 @@ export default function HomeScreen() {
                             placeholder="by User Name"
                             value={filters.ownerUsername}
                             onChange={(e) => handleFilterChange('ownerUsername', e.target.value)}
+                            onKeyDown ={handleFilterKeyDown}
                             size="small"
                             sx={{ bgcolor: '#e8f0fb' }}
                         />
@@ -491,6 +502,7 @@ export default function HomeScreen() {
                             placeholder="by Song Title"
                             value={filters.songTitle}
                             onChange={(e) => handleFilterChange('songTitle', e.target.value)}
+                            onKeyDown ={handleFilterKeyDown}
                             size="small"
                             sx={{ bgcolor: '#e8f0fb' }}
                         />
@@ -499,6 +511,7 @@ export default function HomeScreen() {
                             placeholder="by Song Artist"
                             value={filters.songArtist}
                             onChange={(e) => handleFilterChange('songArtist', e.target.value)}
+                            onKeyDown ={handleFilterKeyDown}
                             size="small"
                             sx={{ bgcolor: '#e8f0fb' }}
                         />
@@ -507,6 +520,7 @@ export default function HomeScreen() {
                             placeholder="by Song Year"
                             value={filters.songYear}
                             onChange={(e) => handleFilterChange('songYear', e.target.value)}
+                            onKeyDown ={handleFilterKeyDown}
                             size="small"
                             sx={{ bgcolor: '#e8f0fb' }}
                         />
@@ -535,16 +549,29 @@ export default function HomeScreen() {
 
                 {/* Right column list */}
                 <Box sx={{ flex: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body1">Sort:</Typography>
-                            <Button 
-                                variant="text" 
-                                onClick={toggleSortOrder}
-                                sx={{ color: '#205697', textTransform: 'none', fontWeight: 700 }}
-                            >
-                                Listeners ({sortOrder === 'desc' ? 'Hi-Lo' : 'Lo-Hi'})
-                            </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                            <FormControl size="small" sx={{ minWidth: 220 }}>
+                                    <InputLabel>Sort</InputLabel>
+                                    <Select
+                                        value={`${sortBy}-${sortOrder}`}
+                                        label="Sort"
+                                        onChange={(e) => {
+                                            const [by, order] = e.target.value.split('-');
+                                            setSortBy(by);
+                                            setSortOrder(order);
+                                        }}
+                                    >
+                                        <MenuItem value="listens-desc">Listeners (Hi-Lo)</MenuItem>
+                                        <MenuItem value="listens-asc">Listeners (Lo-Hi)</MenuItem>
+                                        <MenuItem value="name-asc">Playlist Name (A-Z)</MenuItem>
+                                        <MenuItem value="name-desc">Playlist Name (Z-A)</MenuItem>
+                                        <MenuItem value="owner-asc">User Name (A-Z)</MenuItem>
+                                        <MenuItem value="owner-desc">User Name (Z-A)</MenuItem>
+
+                                </Select>
+                            </FormControl>
+                            
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
                             {filteredPlaylists.length} Playlist{filteredPlaylists.length === 1 ? '' : 's'}
