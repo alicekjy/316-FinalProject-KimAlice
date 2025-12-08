@@ -16,6 +16,12 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
@@ -31,6 +37,7 @@ export default function HomeScreen() {
     const [sortOrder, setSortOrder] = useState('desc');
     const [allPlaylists, setAllPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -174,6 +181,19 @@ export default function HomeScreen() {
         setSortOrder(nextOrder);
     };
 
+    const handleMenuOpen = (event) => {
+        setMenuAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setMenuAnchorEl(null);
+    };
+
+    const handleLogout = () => {
+        handleMenuClose();
+        auth.logoutUser();
+    };
+
     // Filter and sort playlists
     const getFilteredPlaylists = () => {
         // Get the right playlist source
@@ -264,7 +284,7 @@ export default function HomeScreen() {
                     >
                         <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ bgcolor: '#f5f5f5', color: '#222' }}>
+                                <Avatar sx={{ bgcolor: '#e3f2fd', color: '#0d47a1' }}>
                                     {ownerName.substring(0, 2).toUpperCase()}
                                 </Avatar>
                                 <Box sx={{ flexGrow: 1 }}>
@@ -274,7 +294,7 @@ export default function HomeScreen() {
                                     <Typography variant="body2" color="text.secondary">
                                         {ownerName}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#1e88e5', mt: 0.5 }}>
+                                    <Typography variant="body2" sx={{ color: '#1565c0', mt: 0.5 }}>
                                         {listenerCount} Listener{listenerCount === 1 ? '' : 's'}
                                     </Typography>
                                 </Box>
@@ -283,7 +303,7 @@ export default function HomeScreen() {
                                         <>
                                             <Button 
                                                 variant="contained" 
-                                                color="error" 
+                                                sx={{ bgcolor: '#e53935', '&:hover': { bgcolor: '#c62828' } }}
                                                 size="small"
                                                 onClick={(e) => handleDeletePlaylist(playlist._id, e)}
                                             >
@@ -291,7 +311,7 @@ export default function HomeScreen() {
                                             </Button>
                                             <Button 
                                                 variant="contained" 
-                                                color="primary" 
+                                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                                 size="small"
                                                 onClick={(e) => handlePlaylistClick(playlist._id, e)}
                                             >
@@ -299,7 +319,7 @@ export default function HomeScreen() {
                                             </Button>
                                             <Button 
                                                 variant="contained" 
-                                                color="success" 
+                                                sx={{ bgcolor: '#43a047', '&:hover': { bgcolor: '#2e7d32' } }}
                                                 size="small"
                                                 onClick={(e) => handleCopyPlaylist(playlist._id, e)}
                                             >
@@ -309,7 +329,7 @@ export default function HomeScreen() {
                                     )}
                                     <Button 
                                         variant="contained" 
-                                        sx={{ bgcolor: '#e600b6', '&:hover': { bgcolor: '#c20099' } }}
+                                        sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                         size="small"
                                         onClick={(e) => handlePlayPlaylist(playlist._id, e)}
                                     >
@@ -327,28 +347,83 @@ export default function HomeScreen() {
         </List>
     );
 
-    // PLAYLISTS VIEW (works for both guest and logged-in)
+    // playlists view
     return (
-        <Box sx={{ padding: 3, minHeight: '100vh', bgcolor: '#f8dafb' }}>
+        <Box sx={{ padding: 3, minHeight: '100vh', bgcolor: '#e6f0ff' }}>
             <Box
                 sx={{
-                    bgcolor: '#fff9e6',
-                    border: '2px solid #333',
+                    bgcolor: '#f5f9ff',
+                    border: '2px solid #b5c7e0',
                     borderRadius: 1,
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: '100%',
                     maxWidth: '1300px',
+                    minHeight: '700px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
-                    gap: 4,
-                    padding: 3,
+                    flexDirection: 'column',
+                    gap: 3,
                     mt: 2
                 }}
             >
+                {/* Internal banner */}
+                <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        bgcolor: '#205697',
+                        color: 'white',
+                        px: 2,
+                        py: 1.5,
+                        borderBottom: '2px solid #b5c7e0'
+                    }}
+                >
+                    <IconButton 
+                        onClick={() => store.closeCurrentPlaylist()}
+                        sx={{ 
+                            color: '#205697',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#e3f2fd' }
+                        }}
+                        aria-label="Home"
+                    >
+                        <HomeIcon />
+                    </IconButton>
+                    
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        The Playlister
+                    </Typography>
+
+                    <IconButton 
+                        onClick={handleMenuOpen}
+                        sx={{ 
+                            color: '#205697',
+                            bgcolor: 'white',
+                            width: 40,
+                            height: 40,
+                            '&:hover': { bgcolor: '#e3f2fd' }
+                        }}
+                        aria-label="Account"
+                    >
+                        <AccountCircleIcon />
+                    </IconButton>
+                </Box>
+
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: 4,
+                        padding: 3,
+                        flexGrow: 1
+                    }}
+                >
                 {/* Left column filters */}
                 <Box sx={{ flex: 1, maxWidth: 360 }}>
-                    <Typography variant="h4" sx={{ color: '#c000c7', fontWeight: 800, mb: 3 }}>
+                    <Typography variant="h4" sx={{ color: '#1565c0', fontWeight: 800, mb: 3 }}>
                         Playlists
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -358,7 +433,7 @@ export default function HomeScreen() {
                             value={filters.playlistName}
                             onChange={(e) => handleFilterChange('playlistName', e.target.value)}
                             size="small"
-                            sx={{ bgcolor: '#e6e0ef' }}
+                            sx={{ bgcolor: '#e8f0fb' }}
                         />
                         <TextField
                             fullWidth
@@ -366,7 +441,7 @@ export default function HomeScreen() {
                             value={filters.ownerUsername}
                             onChange={(e) => handleFilterChange('ownerUsername', e.target.value)}
                             size="small"
-                            sx={{ bgcolor: '#e6e0ef' }}
+                            sx={{ bgcolor: '#e8f0fb' }}
                         />
                         <TextField
                             fullWidth
@@ -374,7 +449,7 @@ export default function HomeScreen() {
                             value={filters.songTitle}
                             onChange={(e) => handleFilterChange('songTitle', e.target.value)}
                             size="small"
-                            sx={{ bgcolor: '#e6e0ef' }}
+                            sx={{ bgcolor: '#e8f0fb' }}
                         />
                         <TextField
                             fullWidth
@@ -382,7 +457,7 @@ export default function HomeScreen() {
                             value={filters.songArtist}
                             onChange={(e) => handleFilterChange('songArtist', e.target.value)}
                             size="small"
-                            sx={{ bgcolor: '#e6e0ef' }}
+                            sx={{ bgcolor: '#e8f0fb' }}
                         />
                         <TextField
                             fullWidth
@@ -390,20 +465,21 @@ export default function HomeScreen() {
                             value={filters.songYear}
                             onChange={(e) => handleFilterChange('songYear', e.target.value)}
                             size="small"
-                            sx={{ bgcolor: '#e6e0ef' }}
+                            sx={{ bgcolor: '#e8f0fb' }}
                         />
                         <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
                             <Button 
                                 variant="contained" 
-                                startIcon={<PlayArrowIcon />}
-                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' }, flex: 1 }}
+                                startIcon={<SearchIcon />}
+                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' }, flex: 1 }}
                                 onClick={handleSearch}
                             >
                                 Search
                             </Button>
                             <Button 
                                 variant="contained" 
-                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' }, flex: 1 }}
+                                startIcon={<ClearIcon />}
+                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' }, flex: 1 }}
                                 onClick={handleClear}
                             >
                                 Clear
@@ -422,7 +498,7 @@ export default function HomeScreen() {
                             <Button 
                                 variant="text" 
                                 onClick={toggleSortOrder}
-                                sx={{ color: '#1e88e5', textTransform: 'none', fontWeight: 700 }}
+                                sx={{ color: '#205697', textTransform: 'none', fontWeight: 700 }}
                             >
                                 Listeners ({sortOrder === 'desc' ? 'Hi-Lo' : 'Lo-Hi'})
                             </Button>
@@ -436,7 +512,7 @@ export default function HomeScreen() {
                         <Box sx={{ textAlign: 'right' }}>
                             <Button 
                                 variant="contained" 
-                                sx={{ bgcolor: '#6c5ce7', '&:hover': { bgcolor: '#5946c7' } }}
+                                sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                 onClick={handleCreatePlaylist}
                             >
                                 + New Playlist
@@ -463,7 +539,24 @@ export default function HomeScreen() {
                         ) : renderList
                     )}
                 </Box>
+                </Box>
             </Box>
+            <Menu
+                anchorEl={menuAnchorEl}
+                open={Boolean(menuAnchorEl)}
+                onClose={handleMenuClose}
+            >
+                {auth.loggedIn ? (
+                    <>
+                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                    </>
+                ) : (
+                    <>
+                        <MenuItem component="a" href="/login">Login</MenuItem>
+                        <MenuItem component="a" href="/register">Create Account</MenuItem>
+                    </>
+                )}
+            </Menu>
         </Box>
     );
 }
