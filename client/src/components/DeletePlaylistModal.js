@@ -18,7 +18,7 @@ export default function DeletePlaylistModal({
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth
         PaperProps={{
             sx: {
-                minHeight: 320,          // ⬅️ makes the whole modal taller
+                minHeight: 320,
                 display: 'flex',
                 flexDirection: 'column',
             }
