@@ -27,6 +27,7 @@ import AppBanner from './AppBanner';
 import DeletePlaylistModal from './DeletePlaylistModal';
 import EditPlaylistModal from './EditPlaylistModal';
 import Collapse from '@mui/material/Collapse';
+import PlayPlaylistModal from './PlayPlaylistModal';
 
 export default function HomeScreen() {
     const { auth } = useContext(AuthContext);
@@ -48,6 +49,45 @@ export default function HomeScreen() {
     const [selectedPlaylist, setSelectedPlaylist] = useState(null);
     const isLoggedIn = auth.loggedIn;
     const [expanded, setExpanded] = useState({});
+    const [playDialogOpen, setPlayDialogOpen] = useState(false);
+    const [playPlaylist, setPlayPlaylist] = useState(null);
+    const [currentSongIndex, setCurrentSongIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [repeatAll, setRepeatAll] = useState(true);
+    const [playOwnerInfo, setPlayOwnerInfo] = useState({ ownerName: '', ownerAvatar: null });
+
+    const resolveOwnerInfo = (playlist) => {
+        const ownerMatchesUser = auth.user && (
+            playlist.owner?._id === auth.user._id ||
+            (playlist.ownerEmail && playlist.ownerEmail === auth.user.email) ||
+            (playlist.owner?.email && playlist.owner?.email === auth.user.email)
+        );
+
+        const ownerName = (() => {
+            if (ownerMatchesUser) return auth.user.username || auth.user.email || 'Unknown';
+            return (
+                playlist.owner?.username ||
+                playlist.ownerName ||
+                playlist.ownerEmail ||
+                playlist.owner?.email ||
+                'Unknown'
+            );
+        })();
+
+        const ownerAvatar = (() => {
+            if (ownerMatchesUser) return auth.user.avatar || auth.user.image || null;
+            return (
+                playlist.owner?.avatar ||
+                playlist.ownerAvatar ||
+                playlist.owner?.profileImage ||
+                playlist.owner?.avatarUrl ||
+                playlist.owner?.image ||
+                null
+            );
+        })();
+
+        return { ownerName, ownerAvatar };
+    };
 
     useEffect(() => {
         const loadData = async () => {
@@ -94,18 +134,17 @@ export default function HomeScreen() {
         store.copyPlaylist(id);
     }
 
-    const handlePlayPlaylist = async (id, event) => {
+    const handlePlayPlaylist = async (playlist, event) => {
         event.stopPropagation();
+        const ownerInfo = resolveOwnerInfo(playlist);
+        setPlayPlaylist(playlist);
+        setPlayOwnerInfo(ownerInfo);
+        setCurrentSongIndex(0);
+        setIsPlaying(true);
+        setPlayDialogOpen(true);
         try {
             const api = require('../store/requests').default;
-            await api.playPlaylist(id);
-            // Reload playlists to update play count
-            const response = await api.getPlaylists();
-            if (response.ok) {
-                if (!auth.loggedIn) {
-                    setAllPlaylists(response.data.playlists || []);
-                }
-            }
+            await api.playPlaylist(playlist._id);
         } catch (error) {
             console.error('Failed to play playlist:', error);
         }
@@ -283,34 +322,8 @@ export default function HomeScreen() {
             {filteredPlaylists.map((playlist) => {
                 const isOwner = auth.loggedIn && auth.user && playlist.owner?._id === auth.user._id;
                 const listenerCount = playlist.playedBy?.length || 0;
-                const ownerMatchesUser = auth.user && (
-                    playlist.owner?._id === auth.user._id ||
-                    (playlist.ownerEmail && playlist.ownerEmail === auth.user.email) ||
-                    (playlist.owner?.email && playlist.owner?.email === auth.user.email)
-                );
 
-                const ownerName = (() => {
-                    if (ownerMatchesUser) return auth.user.username || auth.user.email || 'Unknown';
-                    return (
-                        playlist.owner?.username ||
-                        playlist.ownerName ||
-                        playlist.ownerEmail ||
-                        playlist.owner?.email ||
-                        'Unknown'
-                    );
-                })();
-
-                const ownerAvatar = (() => {
-                    if (ownerMatchesUser) return auth.user.avatar || auth.user.image || null;
-                    return (
-                        playlist.owner?.avatar ||
-                        playlist.ownerAvatar ||
-                        playlist.owner?.profileImage ||
-                        playlist.owner?.avatarUrl ||
-                        playlist.owner?.image ||
-                        null
-                    );
-                })();
+                const { ownerName, ownerAvatar } = resolveOwnerInfo(playlist);
 
                 return (
                     <ListItem
@@ -372,7 +385,7 @@ export default function HomeScreen() {
                                         variant="contained" 
                                         sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1565c0' } }}
                                         size="small"
-                                        onClick={(e) => handlePlayPlaylist(playlist._id, e)}
+                                        onClick={(e) => handlePlayPlaylist(playlist, e)}
                                     >
                                         Play
                                     </Button>
@@ -583,6 +596,35 @@ export default function HomeScreen() {
                 playlistName={selectedPlaylist?.name || ''}
                 onConfirm={handleDeleteConfirm}
                 onClose={() => setDeleteDialogOpen(false)}
+            />
+            <PlayPlaylistModal
+                open={playDialogOpen}
+                playlist={playPlaylist}
+                currentSongIndex={currentSongIndex}
+                onSelectSong={(idx) => { setCurrentSongIndex(idx); setIsPlaying(true); }}
+                onClose={() => { setPlayDialogOpen(false); setPlayPlaylist(null); }}
+                onPrev={() => {
+                    if (!playPlaylist || !playPlaylist.songs?.length) return;
+                    setCurrentSongIndex((prev) => {
+                        const count = playPlaylist.songs.length;
+                        return (prev - 1 + count) % count;
+                    });
+                    setIsPlaying(true);
+                }}
+                onNext={() => {
+                    if (!playPlaylist || !playPlaylist.songs?.length) return;
+                    setCurrentSongIndex((prev) => {
+                        const count = playPlaylist.songs.length;
+                        return (prev + 1) % count;
+                    });
+                    setIsPlaying(true);
+                }}
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying((p) => !p)}
+                repeatAll={repeatAll}
+                onToggleRepeat={() => setRepeatAll((p) => !p)}
+                ownerName={playOwnerInfo.ownerName}
+                ownerAvatar={playOwnerInfo.ownerAvatar}
             />
         </Box>
     );
