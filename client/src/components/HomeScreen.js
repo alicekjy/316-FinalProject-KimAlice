@@ -349,22 +349,31 @@ export default function HomeScreen() {
 
     // playlists view
     return (
-        <Box sx={{ padding: 3, minHeight: '100vh', bgcolor: '#e6f0ff' }}>
+        <Box 
+            sx={{ 
+                padding: 3, 
+                minHeight: '100vh', 
+                bgcolor: '#e6f0ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}
+        >
             <Box
                 sx={{
                     bgcolor: '#f5f9ff',
                     border: '2px solid #b5c7e0',
                     borderRadius: 1,
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
-                    width: '100%',
-                    maxWidth: '1300px',
-                    minHeight: '700px',
+                    width: 'calc(100% - 48px)',
+                    maxWidth: '1200px',
+                    minHeight: '800px',
                     margin: '0 auto',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 3,
-                    mt: 2
+                    mt: 0
                 }}
             >
                 {/* Internal banner */}

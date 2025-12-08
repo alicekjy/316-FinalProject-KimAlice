@@ -41,7 +41,7 @@ export default function SplashScreen() {
                     boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
                     width: '100%',
                     maxWidth: '1200px',
-                    minHeight: '700px',
+                    minHeight: '800px',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column'
