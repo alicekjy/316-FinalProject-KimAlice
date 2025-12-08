@@ -22,6 +22,9 @@ export default function AppBanner() {
     const [anchorEl, setAnchorEl] = useState(null);
     const isMenuOpen = Boolean(anchorEl);
     const isSplash = location.pathname === '/';
+    const isPlaylists = location.pathname === '/playlists';
+    const isLogin = location.pathname === '/login';
+    const isRegister = location.pathname === '/register';
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
@@ -128,7 +131,7 @@ export default function AppBanner() {
         }
     }
 
-    if (isSplash) {
+    if (isSplash || isPlaylists || isLogin || isRegister) {
         return null;
     }
 
