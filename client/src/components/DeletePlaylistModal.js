@@ -39,7 +39,7 @@ export default function DeletePlaylistModal({
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
                     <Button 
                         variant="contained" 
-                        sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#1b5e20' }, minWidth: 140 }}
+                        sx={{ bgcolor: '#205697', '&:hover': { bgcolor: '#41648e' }, minWidth: 140 }}
                         onClick={onConfirm}
                     >
                         Delete Playlist

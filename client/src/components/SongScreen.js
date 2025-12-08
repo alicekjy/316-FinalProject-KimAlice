@@ -25,6 +25,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import Menu from '@mui/material/Menu';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EditSongModal from './EditSongModal';
+import AddSongModal from './AddSongModal';
 
 export default function SongScreen() {
     const { auth } = useContext(AuthContext);
@@ -89,12 +91,19 @@ export default function SongScreen() {
     };
 
     const handleEdit = async () => {
-        if (selectedSong) {
-            const year = parseInt(songYear);
-            if (songTitle && songArtist && year && songYoutubeId) {
-                await store.updateSong(selectedSong._id, songTitle, songArtist, year, songYoutubeId);
-                setEditDialogOpen(false);
-            }
+        if (!selectedSong) return;
+        const ok = await store.updateSong(selectedSong._id, songTitle, songArtist, songYear, songYoutubeId);
+        if (ok) {
+            setSelectedSong({
+                ...selectedSong,
+                title: songTitle,
+                artist: songArtist,
+                year: songYear,
+                youtubeId: songYoutubeId
+            });
+            setEditDialogOpen(false);
+            setMenuAnchor(null);
+            setMenuSong(null);
         }
     };
 
@@ -438,87 +447,37 @@ export default function SongScreen() {
                 )}
             </Menu>
 
-            {/* Add Song Modal */}
-            <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Add New Song</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Title"
-                        value={songTitle}
-                        onChange={(e) => setSongTitle(e.target.value)}
-                        margin="normal"
-                        autoFocus
-                    />
-                    <TextField
-                        fullWidth
-                        label="Artist"
-                        value={songArtist}
-                        onChange={(e) => setSongArtist(e.target.value)}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Year"
-                        type="number"
-                        value={songYear}
-                        onChange={(e) => setSongYear(e.target.value)}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="YouTube Video ID"
-                        value={songYoutubeId}
-                        onChange={(e) => setSongYoutubeId(e.target.value)}
-                        margin="normal"
-                        helperText="Example: dQw4w9WgXcQ (from youtube.com/watch?v=dQw4w9WgXcQ)"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleAdd} variant="contained">Add Song</Button>
-                </DialogActions>
-            </Dialog>
+            <AddSongModal
+                open={addDialogOpen}
+                title={songTitle}
+                artist={songArtist}
+                year={songYear}
+                youtubeId={songYoutubeId}
+                onChange={({ field, value }) => {
+                    if (field === 'title') setSongTitle(value);
+                    if (field === 'artist') setSongArtist(value);
+                    if (field === 'year') setSongYear(value);
+                    if (field === 'youtubeId') setSongYoutubeId(value);
+                }}
+                onCancel={() => setAddDialogOpen(false)}
+                onSave={handleAdd}
+            />
 
-            {/* Edit Song Modal */}
-            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Edit Song</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Title"
-                        value={songTitle}
-                        onChange={(e) => setSongTitle(e.target.value)}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Artist"
-                        value={songArtist}
-                        onChange={(e) => setSongArtist(e.target.value)}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Year"
-                        type="number"
-                        value={songYear}
-                        onChange={(e) => setSongYear(e.target.value)}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="YouTube Video ID"
-                        value={songYoutubeId}
-                        onChange={(e) => setSongYoutubeId(e.target.value)}
-                        margin="normal"
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleEdit} variant="contained">Save Changes</Button>
-                </DialogActions>
-            </Dialog>
+            <EditSongModal
+                open = {editDialogOpen}
+                title = {songTitle}
+                artist = {songArtist}
+                year = {songYear}
+                youtubeId = {songYoutubeId}
+                onChange = {({field, value})=>{
+                    if(field === 'title') setSongTitle(value);
+                    if(field === 'artist') setSongArtist(value);
+                    if(field === 'year') setSongYear(value);
+                    if(field === 'youtubeId') setSongYoutubeId(value);
+                }}
+                onCancel = {() => setEditDialogOpen(false)}
+                onSave ={handleEdit}
+            />
 
             {/* Delete Song Modal */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>

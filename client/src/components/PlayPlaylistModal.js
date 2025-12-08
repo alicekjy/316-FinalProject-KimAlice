@@ -43,13 +43,43 @@ export default function PlayPlaylistModal({
     const playerRef = useRef(null);
     const playerReadyRef = useRef(false);
     const containerRef = useRef(null);
+    const destroyPlayer = () => {
+        if (playerRef.current) {
+            try {
+                playerRef.current.destroy();
+            } catch (e) {
+
+            }
+            playerRef.current = null;
+            playerReadyRef.current = false;
+        }
+    };
 
     // load YouTube API and create player once modal opens
     useEffect(() => {
-        if (!open) return;
+        let cancelled = false;       
+
+        if (!open || !videoId) {
+            destroyPlayer();
+            return;
+        }
 
         const setupPlayer = () => {
-            if (playerRef.current || !containerRef.current) return;
+            if (cancelled) return;
+            if (!containerRef.current) {
+                requestAnimationFrame(setupPlayer);
+                return;
+            }
+            if (!(window.YT && window.YT.Player)) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                window.onYouTubeIframeAPIReady = () => {
+                    if (!cancelled) setupPlayer();
+                };
+                document.body.appendChild(tag);
+                return;
+            }
+            destroyPlayer();
             playerRef.current = new window.YT.Player(containerRef.current, {
                 height: '100%',
                 width: '100%',
@@ -57,6 +87,7 @@ export default function PlayPlaylistModal({
                 playerVars: { origin: window.location.origin, rel: 0, modestbranding: 1, enablejsapi: 1 },
                 events: {
                     onReady: (event) => {
+                        if(cancelled) return;
                         playerReadyRef.current = true;
                         if (isPlaying) event.target.playVideo();
                     }
@@ -64,23 +95,14 @@ export default function PlayPlaylistModal({
             });
         };
 
-        if (window.YT && window.YT.Player) {
-            setupPlayer();
-        } else {
-            const tag = document.createElement('script');
-            tag.src = 'https://www.youtube.com/iframe_api';
-            window.onYouTubeIframeAPIReady = () => {
-                setupPlayer();
-            };
-            document.body.appendChild(tag);
-        }
+        setupPlayer();
 
         return () => {
-            if (playerRef.current && playerReadyRef.current) {
-                playerRef.current.stopVideo();
-            }
+            cancelled = true;
+            destroyPlayer();
         };
-    }, [open]);
+
+    }, [open, videoId]);
 
     // respond to video changes
     useEffect(() => {
@@ -101,13 +123,6 @@ export default function PlayPlaylistModal({
         }
     }, [isPlaying]);
 
-    // stop playback when closing
-    useEffect(() => {
-        if (!open && playerRef.current && playerReadyRef.current) {
-            playerRef.current.stopVideo();
-        }
-    }, [open]);
- 
     
     return (
         <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>

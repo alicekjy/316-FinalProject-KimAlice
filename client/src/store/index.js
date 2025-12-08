@@ -169,6 +169,18 @@ function GlobalStoreContextProvider(props) {
             console.error('Failed to create song:', error);
         }
     }
+    store.updateSong = async function (id, title, artist, year, youtubeId) {
+        try {
+            const response = await api.updateSong(id, title, artist, year, youtubeId);
+            if (response.ok || response.status === 200) {
+                await store.loadSongs();
+                return true;
+            }
+        } catch (error) {
+            console.error('Failed to update song:', error);
+        }
+        return false;
+    }
 
     store.deleteSong = async function (id) {
         try {
