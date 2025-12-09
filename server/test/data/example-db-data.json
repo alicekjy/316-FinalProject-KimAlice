@@ -1,0 +1,588 @@
+{
+  "users": [
+    {
+      "email": "andy@tran.com",
+      "username": "AndyTran",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "sora@deleon.com",
+      "username": "SoraDeleon",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "freddy@lin.com",
+      "username": "FreddyLin",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "justin@daos.com",
+      "username": "JustinDaos",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "yu@chen.com",
+      "username": "YuChen",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "jason@elshemy.com",
+      "username": "JasonElshemy",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "madhav@alessi.com",
+      "username": "MadhavAlessi",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "gatik@chitti.com",
+      "username": "GatikChitti",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "lisul@letowski.com",
+      "username": "LisulLetowski",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    },
+    {
+      "email": "ryan@badar.com",
+      "username": "RyanBadar",
+      "passwordHash": "$2a$10$exampleHashForTesting1234567890123456789012",
+      "avatar": ""
+    }
+  ],
+  "songs": [
+    {
+      "title": "I Want To Hold Your Hand",
+      "artist": "The Beatles",
+      "year": 1963,
+      "youtubeId": "v1HDt1tknTc",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Let It Be",
+      "artist": "The Beatles",
+      "year": 1970,
+      "youtubeId": "QDYfEBY9NM4",
+      "numListens": 0,
+      "numPlaylists": 8
+    },
+    {
+      "title": "Mister Sandman",
+      "artist": "Chet Atkins",
+      "year": 1954,
+      "youtubeId": "dfsG1ukihl4",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Folsom Prison Blues",
+      "artist": "Johnny Cash",
+      "year": 1955,
+      "youtubeId": "AeZRYhLDLeU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Smooth Criminal",
+      "artist": "Michael Jackson",
+      "year": 1987,
+      "youtubeId": "h_D3VFfhvs4",
+      "numListens": 0,
+      "numPlaylists": 6
+    },
+    {
+      "title": "Yellow Submarine",
+      "artist": "The Beatles",
+      "year": 1968,
+      "youtubeId": "j_JaDDcyIIU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Here Comes The Sun",
+      "artist": "The Beatles",
+      "year": 1969,
+      "youtubeId": "GKdl-GCsNJ0",
+      "numListens": 0,
+      "numPlaylists": 3
+    },
+    {
+      "title": "Don't Stop Me Now",
+      "artist": "Queen",
+      "year": 1979,
+      "youtubeId": "HgzGwKwLmgM",
+      "numListens": 0,
+      "numPlaylists": 5
+    },
+    {
+      "title": "September",
+      "artist": "Earth, Wind & Fire",
+      "year": 1978,
+      "youtubeId": "Gs069dndIYk",
+      "numListens": 0,
+      "numPlaylists": 6
+    },
+    {
+      "title": "Thunderstruck",
+      "artist": "AC/DC",
+      "year": 1990,
+      "youtubeId": "v2AC41dglnM",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Back In Black",
+      "artist": "AC/DC",
+      "year": 1980,
+      "youtubeId": "pAgnJDJN4VA",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Bohemian Rhapsody",
+      "artist": "Queen",
+      "year": 1975,
+      "youtubeId": "fJ9rUzIMcZQ",
+      "numListens": 0,
+      "numPlaylists": 41
+    },
+    {
+      "title": "Seven Nation Army",
+      "artist": "The White Stripes",
+      "year": 2003,
+      "youtubeId": "0J2QdDbelmY",
+      "numListens": 0,
+      "numPlaylists": 7
+    },
+    {
+      "title": "Paint It, Black",
+      "artist": "The Rolling Stones",
+      "year": 1966,
+      "youtubeId": "O4irXQhgMqg",
+      "numListens": 0,
+      "numPlaylists": 2
+    },
+    {
+      "title": "Dream On",
+      "artist": "Aerosmith",
+      "year": 1973,
+      "youtubeId": "89dGC8de0CA",
+      "numListens": 0,
+      "numPlaylists": 6
+    },
+    {
+      "title": "Hotel California",
+      "artist": "Eagles",
+      "year": 1976,
+      "youtubeId": "dLl4PZtxia8",
+      "numListens": 0,
+      "numPlaylists": 17
+    },
+    {
+      "title": "Yesterday",
+      "artist": "The Beatles",
+      "year": 1965,
+      "youtubeId": "NrgmdOz227I",
+      "numListens": 0,
+      "numPlaylists": 12
+    },
+    {
+      "title": "Stairway to Heaven",
+      "artist": "Led Zeppelin",
+      "year": 1971,
+      "youtubeId": "X791IzOwt3Q",
+      "numListens": 0,
+      "numPlaylists": 8
+    },
+    {
+      "title": "Just The Two Of Us",
+      "artist": "Grover Washington, Jr. and Bill Withers",
+      "year": 1980,
+      "youtubeId": "6POZlJAZsok",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Don't Worry, Be Happy",
+      "artist": "Bobby McFerrin",
+      "year": 1988,
+      "youtubeId": "d-diB65scQU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Fear Of Water",
+      "artist": "Noah Kahan",
+      "year": 2021,
+      "youtubeId": "2CNyz1Wk8eU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Howling",
+      "artist": "Noah Kahan",
+      "year": 2021,
+      "youtubeId": "oAq9C7MGwAI",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Your Needs, My Needs",
+      "artist": "Noah Kahan",
+      "year": 2022,
+      "youtubeId": "CWfjMzuzEi8",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Godlight",
+      "artist": "Noah Kahan",
+      "year": 2021,
+      "youtubeId": "BoxCsOQV_mA",
+      "numListens": 0,
+      "numPlaylists": 2
+    },
+    {
+      "title": "Forever",
+      "artist": "Noah Kahan",
+      "year": 2022,
+      "youtubeId": "MXmQq7AkXYE",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Understand",
+      "artist": "keshi",
+      "year": 2022,
+      "youtubeId": "6DcUnqZqTvI",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "If We Were Vampires",
+      "artist": "Noah Kahan ft. Wesley Schultz",
+      "year": 2023,
+      "youtubeId": "246pND4SGXk",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Orange Juice",
+      "artist": "Alfie Jukes ft. Nell Mescal",
+      "year": 2024,
+      "youtubeId": "EboIgjNxoH0",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Maine",
+      "artist": "Noah Kahan",
+      "year": 2020,
+      "youtubeId": "NogPlgO7jng",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Jackie and Wilson",
+      "artist": "Hozier",
+      "year": 2014,
+      "youtubeId": "cSWqxbswQAY",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Unknown / Nth",
+      "artist": "Hozier",
+      "year": 2023,
+      "youtubeId": "LbztOHrFhK0",
+      "numListens": 0,
+      "numPlaylists": 2
+    },
+    {
+      "title": "Come Over",
+      "artist": "Noah Kahan",
+      "year": 2022,
+      "youtubeId": "Jm76aFLbgRc",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Orange Juice",
+      "artist": "Noah Kahan",
+      "year": 2022,
+      "youtubeId": "WtKTfzNcX9Y",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Strawberry Wine",
+      "artist": "Noah Kahan",
+      "year": 2022,
+      "youtubeId": "vFa8FOevDtA",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Only A Lifetime",
+      "artist": "FINNEAS",
+      "year": 2021,
+      "youtubeId": "b2KRc5ilYRc",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Keep Me",
+      "artist": "Novo Amor",
+      "year": 2020,
+      "youtubeId": "cD71pdObpwg",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Ceilings",
+      "artist": "Lizzy McAlpine",
+      "year": 2022,
+      "youtubeId": "SOxmA-nKfbU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Anchor",
+      "artist": "Novo Amor",
+      "year": 2015,
+      "youtubeId": "OmKAn8rNbKg",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Anyway",
+      "artist": "Noah Kahan",
+      "year": 2020,
+      "youtubeId": "5HzpPl5a9EA",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "From Eden",
+      "artist": "Hozier",
+      "year": 2014,
+      "youtubeId": "cI0wUoCLnLk",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Euphor",
+      "artist": "Novo Amor & Lowswimmer",
+      "year": 2017,
+      "youtubeId": "saAifhBh6SI",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "G.O.A.T.",
+      "artist": "Polyphia",
+      "year": 2018,
+      "youtubeId": "9_gkpYORQLU",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Playing God",
+      "artist": "Polyphia",
+      "year": 2022,
+      "youtubeId": "Z5NoQg8LdDk",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Monologue",
+      "artist": "Seiji Igusa",
+      "year": 2020,
+      "youtubeId": "yNVXbCwInzw",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Homesick",
+      "artist": "Ichika Nito",
+      "year": 2022,
+      "youtubeId": "zGEaasyjM5E",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Talk",
+      "artist": "keshi",
+      "year": 2020,
+      "youtubeId": "cAo1Mvhq_1M",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Bridge Over Troubled Water",
+      "artist": "Jacob Collier, John Legend, and Tori Kelly",
+      "year": 2024,
+      "youtubeId": "vxatt51kf3w",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Mount Everest",
+      "artist": "Labrinth",
+      "year": 2022,
+      "youtubeId": "4yPZs81lK3w",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "Formula",
+      "artist": "Labrinth",
+      "year": 2019,
+      "youtubeId": "N7EKS2aW_oc",
+      "numListens": 0,
+      "numPlaylists": 1
+    },
+    {
+      "title": "All For Us",
+      "artist": "Labrinth, Zendaya",
+      "year": 2019,
+      "youtubeId": "Z5jWsM07fuI",
+      "numListens": 0,
+      "numPlaylists": 1
+    }
+  ],
+  "playlists": [
+    {
+      "name": "AndyTran's Top Hits",
+      "ownerEmail": "andy@tran.com",
+      "songIndices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "AndyTran's Favorites",
+      "ownerEmail": "andy@tran.com",
+      "songIndices": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "SoraDeleon's Top Hits",
+      "ownerEmail": "sora@deleon.com",
+      "songIndices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "SoraDeleon's Favorites",
+      "ownerEmail": "sora@deleon.com",
+      "songIndices": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "FreddyLin's Top Hits",
+      "ownerEmail": "freddy@lin.com",
+      "songIndices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "FreddyLin's Favorites",
+      "ownerEmail": "freddy@lin.com",
+      "songIndices": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "JustinDaos's Top Hits",
+      "ownerEmail": "justin@daos.com",
+      "songIndices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "JustinDaos's Favorites",
+      "ownerEmail": "justin@daos.com",
+      "songIndices": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "YuChen's Top Hits",
+      "ownerEmail": "yu@chen.com",
+      "songIndices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "playedBy": []
+    },
+    {
+      "name": "YuChen's Favorites",
+      "ownerEmail": "yu@chen.com",
+      "songIndices": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "playedBy": []
+    }
+  ]
+}
