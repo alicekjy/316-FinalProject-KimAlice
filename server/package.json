@@ -3,7 +3,9 @@
   "version": "4.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/mongo.test.js"
   },
   "license": "MIT",
   "dependencies": {
