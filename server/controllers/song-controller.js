@@ -102,9 +102,9 @@ searchSongs = async (req, res) => {
         const {title, artist, year, sortBy, sortOrder} = req.query;
 
         let filters = {};
-        if(title) filters.title = title;
-        if(artist) filters.artist = artist;
-        if(year) filters.year = year;
+        if(title && title.trim() !== '') filters.title = title.trim();
+        if(artist && artist.trim() !== '') filters.artist = artist.trim();
+        if(year && year.trim() !== '') filters.year = year.trim();
 
         let songs = await db.searchSongs(filters);
 
