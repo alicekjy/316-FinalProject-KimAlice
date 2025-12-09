@@ -57,7 +57,7 @@ export default function HomeScreen() {
     const [playPlaylist, setPlayPlaylist] = useState(null);
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
-    const [repeatAll, setRepeatAll] = useState(true);
+    const [repeatAll, setRepeatAll] = useState(false);
     const [playOwnerInfo, setPlayOwnerInfo] = useState({ ownerName: '', ownerAvatar: null });
 
     const resolveOwnerInfo = (playlist) => {
@@ -633,7 +633,11 @@ export default function HomeScreen() {
                     if (!playPlaylist || !playPlaylist.songs?.length) return;
                     setCurrentSongIndex((prev) => {
                         const count = playPlaylist.songs.length;
-                        return (prev - 1 + count) % count;
+                        const nextIndex = prev - 1;
+                        if (nextIndex < 0) {
+                            return repeatAll ? count - 1 : 0;
+                        }
+                        return nextIndex;
                     });
                     setIsPlaying(true);
                 }}
@@ -641,7 +645,11 @@ export default function HomeScreen() {
                     if (!playPlaylist || !playPlaylist.songs?.length) return;
                     setCurrentSongIndex((prev) => {
                         const count = playPlaylist.songs.length;
-                        return (prev + 1) % count;
+                        const nextIndex = prev + 1;
+                        if (nextIndex >= count) {
+                            return repeatAll ? 0 : prev;
+                        }
+                        return nextIndex;
                     });
                     setIsPlaying(true);
                 }}

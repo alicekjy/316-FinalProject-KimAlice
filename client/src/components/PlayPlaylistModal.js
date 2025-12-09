@@ -40,9 +40,11 @@ export default function PlayPlaylistModal({
     const ownerAvatar = ownerAvatarProp || playlist?.owner?.avatar || playlist?.ownerAvatar || playlist?.owner?.avatarUrl || playlist?.owner?.profileImage || playlist?.owner?.image;
 
     const videoId = currentSong?.youtubeId;
+    const repeatEnabled = repeatAll;
     const playerRef = useRef(null);
     const playerReadyRef = useRef(false);
     const containerRef = useRef(null);
+    const repeatRef = useRef(repeatAll);
     const destroyPlayer = () => {
         if (playerRef.current) {
             try {
@@ -54,6 +56,10 @@ export default function PlayPlaylistModal({
             playerReadyRef.current = false;
         }
     };
+
+    useEffect(()=> {
+        repeatRef.current = repeatAll;
+    }, [repeatAll]);
 
     // load YouTube API // create player once modal opens
     useEffect(() => {
@@ -90,6 +96,13 @@ export default function PlayPlaylistModal({
                         if(cancelled) return;
                         playerReadyRef.current = true;
                         if (isPlaying) event.target.playVideo();
+                    },
+                    onStateChange: (event) => {
+                        if (event.data === window.YT.PlayerState.ENDED) {
+                            if (repeatRef.current) {
+                                onNext?.();
+                            }
+                        }
                     }
                 }
             });
@@ -122,6 +135,7 @@ export default function PlayPlaylistModal({
             playerRef.current.pauseVideo();
         }
     }, [isPlaying]);
+
 
     
     return (
